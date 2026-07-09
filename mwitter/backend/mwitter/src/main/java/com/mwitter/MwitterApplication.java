@@ -6,8 +6,8 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;//Spring Boo
 @SpringBootApplication//bu sınıfın bir Spring Boot uygulaması olduğunu belirtir. Bu anotasyon, uygulamanın başlatılması için gerekli yapılandırmaları otomatik olarak yapar.
 public class MwitterApplication {
 
-	public static void main(String[] args) {
-		SpringApplication.run(MwitterApplication.class, args);// Spring Boot uygulamasını başlatır. Bu satır, MwitterApplication sınıfını çalıştırır ve uygulamanın başlatılmasını sağlar.
-	}
+    public static void main(String[] args) {
+        SpringApplication.run(MwitterApplication.class, args);// Spring Boot uygulamasını başlatır. Bu satır, MwitterApplication sınıfını çalıştırır ve uygulamanın başlatılmasını sağlar.
+    }
 
 }

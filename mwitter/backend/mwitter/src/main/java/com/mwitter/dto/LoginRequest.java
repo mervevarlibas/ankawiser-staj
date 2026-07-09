@@ -1,4 +1,5 @@
 package com.mwitter.dto;
+
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -8,7 +9,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class LoginRequest {
 
-private String email;
+    private String email;
 
     private String password;
 

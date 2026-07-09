@@ -1,41 +1,43 @@
 package com.mwitter.model;//dosyanın hangi klasöre ait olduğunu belirtiyoruz 
 //Spring Boot @SpringBootApplication sayesinde com.mwitter paketini tararken bu sınıfı da bulur.
+
 import java.time.LocalDateTime;//saati ve tarihi birlikte tutar
+import java.util.ArrayList;
+import java.util.List;
 
-import org.springframework.data.annotation.Id;
-import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.data.annotation.Id;//bu alan geçerli bir email adresi olmalıdır
+import org.springframework.data.mongodb.core.mapping.Document;//bu alan boş olamaz
 
-import jakarta.validation.constraints.Email;//bu alan geçerli bir email adresi olmalıdır
-import jakarta.validation.constraints.NotBlank;//bu alan boş olamaz
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import java.util.ArrayList;
-import java.util.List;
+
 @Data//lombok kütüphanesinin bir anotasyonu. Bu anotasyon, sınıfın tüm alanları için getter ve setter metodlarını otomatik olarak oluşturur. Ayrıca, equals(), hashCode() ve toString() metodlarını da oluşturur.
 @NoArgsConstructor
-@AllArgsConstructor 
+@AllArgsConstructor
 @Document(collection = "users")//bu sınıfın MongoDB de "users" koleksiyonuna karşılık geldiğini belirtiyoruz
 
 public class User {
 
     @Id //MongoDB deki her belgenin benzersiz bir kimliğe sahip olduğunu belirtiyoruz
-     private String id;
+    private String id;
     @NotBlank(message = "Username cannot be empty")
-     private String username;
+    private String username;
     @Email(message = "Invalid email")//formatı geçerli bir email adresi olmalıdır
     @NotBlank(message = "Email cannot be empty")
-     private String email;
+    private String email;
 
     @NotBlank(message = "Password cannot be empty")
-     private String password;//ilerde hashleyip saklayacağız
+    private String password;//ilerde hashleyip saklayacağız
 
     @NotBlank(message = "Phone number cannot be empty")
-     private String phoneNumber;
+    private String phoneNumber;
 
-     private LocalDateTime registrationDate;
+    private LocalDateTime registrationDate;
 
-     private List<String> following = new ArrayList<>();
+    private List<String> following = new ArrayList<>();
 
-private List<String> followers = new ArrayList<>();
+    private List<String> followers = new ArrayList<>();
 }

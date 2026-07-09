@@ -1,18 +1,39 @@
 package com.mwitter.exception;
-import java.time.LocalDateTime;
 
-import org.springframework.web.bind.annotation.ExceptionHandler;//bir hata oluşursa bu metod çalışacak
-import org.springframework.web.bind.annotation.RestControllerAdvice;//Bütün Controller'ları merkezi olarak yönet
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.ArrayList;
+
+import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
-@ExceptionHandler(RuntimeException.class)//RuntimeException hatası oluşursa handleRuntimeException metodu çalışacak
-public ErrorResponse handleRuntimeException(RuntimeException ex) {//ex değişkeni içinde fırlatılan hata var
 
-    return new ErrorResponse(
+    @ExceptionHandler(RuntimeException.class)
+    public ErrorResponse handleRuntimeException(RuntimeException ex) {
+
+        return new ErrorResponse(
                 LocalDateTime.now(),
-                ex.getMessage()
+                ex.getMessage(),
+                null
         );
+    }
 
-}
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ErrorResponse handleValidationException(MethodArgumentNotValidException ex) {
+
+        List<String> errors = new ArrayList<>();
+
+        ex.getBindingResult().getFieldErrors().forEach(error -> {
+            errors.add(error.getDefaultMessage());
+        });
+
+        return new ErrorResponse(
+            LocalDateTime.now(),
+            "Validation failed",
+            errors
+    );
+    }
 }

@@ -1,6 +1,7 @@
 package com.mwitter.exception;
-import java.time.LocalDateTime;
 
+import java.time.LocalDateTime;
+import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 
@@ -8,8 +9,8 @@ import lombok.Data;
 @AllArgsConstructor
 public class ErrorResponse {
 
- private LocalDateTime timestamp;//hata oluştuğu zamanı tutuyoruz
+    private LocalDateTime timestamp;//hata oluştuğu zamanı tutuyoruz
 
     private String message;//hata mesajını tutuyoruz
-
+  private List<String> errors;
 }
