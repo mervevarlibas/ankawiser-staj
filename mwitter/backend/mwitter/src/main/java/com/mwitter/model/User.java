@@ -10,7 +10,8 @@ import jakarta.validation.constraints.NotBlank;//bu alan boş olamaz
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-
+import java.util.ArrayList;
+import java.util.List;
 @Data//lombok kütüphanesinin bir anotasyonu. Bu anotasyon, sınıfın tüm alanları için getter ve setter metodlarını otomatik olarak oluşturur. Ayrıca, equals(), hashCode() ve toString() metodlarını da oluşturur.
 @NoArgsConstructor
 @AllArgsConstructor 
@@ -34,4 +35,7 @@ public class User {
 
      private LocalDateTime registrationDate;
 
+     private List<String> following = new ArrayList<>();
+
+private List<String> followers = new ArrayList<>();
 }

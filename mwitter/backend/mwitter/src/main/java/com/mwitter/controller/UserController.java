@@ -4,6 +4,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
 import com.mwitter.dto.LoginRequest;
 import com.mwitter.dto.LoginResponse;
@@ -35,6 +36,16 @@ public UserResponse searchUser(@RequestParam String username) {//@RequestParam i
 
     return userService.findByUsername(username);
 
+}
+@PostMapping("/users/{followerId}/follow/{followingId}")
+public void followUser(@PathVariable String followerId, @PathVariable String followingId) {
+
+    userService.followUser(followerId, followingId);
+}
+@PostMapping("/users/{followerId}/unfollow/{followingId}")
+public void unfollowUser(@PathVariable String followerId, @PathVariable String followingId) {
+
+    userService.unfollowUser(followerId, followingId);
 }
 
 }
