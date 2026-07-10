@@ -3,7 +3,8 @@ package com.mwitter.exception;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.ArrayList;
-
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -12,17 +13,18 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 public class GlobalExceptionHandler {
 
     @ExceptionHandler(RuntimeException.class)
-    public ErrorResponse handleRuntimeException(RuntimeException ex) {
+    public ResponseEntity<ErrorResponse> handleRuntimeException(RuntimeException ex) {//içinde hata cevabı http durum kodu bulunan responseentity döndürüyor
 
-        return new ErrorResponse(
+        ErrorResponse errorResponse = new ErrorResponse(//gönderilecek json nesnesi
                 LocalDateTime.now(),
                 ex.getMessage(),
                 null
         );
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);//http kodunu yapıp oluşturuduğumuz hata nesnesini body olarak döndürüyor
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ErrorResponse handleValidationException(MethodArgumentNotValidException ex) {
+    public ResponseEntity<ErrorResponse> handleValidationException(MethodArgumentNotValidException ex) {
 
         List<String> errors = new ArrayList<>();
 
@@ -30,10 +32,14 @@ public class GlobalExceptionHandler {
             errors.add(error.getDefaultMessage());
         });
 
-        return new ErrorResponse(
-            LocalDateTime.now(),
-            "Validation failed",
-            errors
-    );
+        ErrorResponse errorResponse = new ErrorResponse(
+                LocalDateTime.now(),
+                "Validation failed",
+                errors
+        );
+
+        return ResponseEntity
+                .status(HttpStatus.BAD_REQUEST)
+                .body(errorResponse);
     }
 }

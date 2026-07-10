@@ -19,6 +19,6 @@ public class Post {
     private String id;
     private String content;
     private LocalDateTime createdAt;//postun oluşturulma tarihi
-    private User user;//post nesnesinin içinde user nesnesi olacak !!!!!!!!BUNU userid ile düzeltecegim!!!!!!
+    private String userId;//postun sahibi olan kullanıcı ID'si
 
 }

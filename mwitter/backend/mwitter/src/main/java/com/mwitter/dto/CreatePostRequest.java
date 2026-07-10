@@ -12,10 +12,9 @@ import lombok.NoArgsConstructor;
 public class CreatePostRequest {
 
     @NotBlank(message = "Post content cannot be empty")
-    @Size(max = 200, message = "Post content cannot be longer than 200 characters")
-    private String content;//kullanıcının yazdığı tweetin içeriği
-
-    @NotBlank(message = "User id cannot be empty")
-    private String userId;//tweetin hangi kullanıcı tarafından atıldığını bilmek için
-
+    @Size(
+        max = 200,
+        message = "Post content cannot be longer than 200 characters"
+    )
+    private String content;
 }

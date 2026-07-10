@@ -1,15 +1,12 @@
 package com.mwitter.model;//dosyanın hangi klasöre ait olduğunu belirtiyoruz 
 //Spring Boot @SpringBootApplication sayesinde com.mwitter paketini tararken bu sınıfı da bulur.
-
 import java.time.LocalDateTime;//saati ve tarihi birlikte tutar
 import java.util.ArrayList;
 import java.util.List;
 
-import org.springframework.data.annotation.Id;//bu alan geçerli bir email adresi olmalıdır
-import org.springframework.data.mongodb.core.mapping.Document;//bu alan boş olamaz
+import org.springframework.data.annotation.Id;//MongoDB deki her belgenin benzersiz bir kimliğe sahip olduğunu belirtiyoruz
+import org.springframework.data.mongodb.core.mapping.Document; //Bu sınıfın MongoDB'de bir collection olduğunu söyler.
 
-import jakarta.validation.constraints.Email;
-import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -23,21 +20,12 @@ public class User {
 
     @Id //MongoDB deki her belgenin benzersiz bir kimliğe sahip olduğunu belirtiyoruz
     private String id;
-    @NotBlank(message = "Username cannot be empty")
     private String username;
-    @Email(message = "Invalid email")//formatı geçerli bir email adresi olmalıdır
-    @NotBlank(message = "Email cannot be empty")
     private String email;
-
-    @NotBlank(message = "Password cannot be empty")
-    private String password;//ilerde hashleyip saklayacağız
-
-    @NotBlank(message = "Phone number cannot be empty")
+    private String password;
     private String phoneNumber;
-
     private LocalDateTime registrationDate;
 
     private List<String> following = new ArrayList<>();
-
     private List<String> followers = new ArrayList<>();
 }

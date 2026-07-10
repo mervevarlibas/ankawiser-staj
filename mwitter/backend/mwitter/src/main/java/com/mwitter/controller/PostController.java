@@ -15,7 +15,7 @@ import com.mwitter.service.PostService;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-
+import org.springframework.security.core.Authentication;
 @RestController//bu sınıf http isteklerini karşılayacak bir controller olduğunu belirtiyoruz
 @RequestMapping("/posts")//bu controllerin hangi url ile çağrılacağını belirtiyoruz
 @RequiredArgsConstructor
@@ -24,9 +24,11 @@ public class PostController {
     private final PostService postService;//çalışabilmesi için postservice i çağırıyoruz
 
     @PostMapping
-    public PostResponse createPost(@Valid @RequestBody CreatePostRequest request) {
+    public PostResponse createPost(@Valid @RequestBody CreatePostRequest request,
+        Authentication authentication) {
+String userId = authentication.getName();
 
-        return postService.createPost(request);//isteği postservice e gönderiyoruz ve postservice den dönen postu geri döndürüyoruz
+    return postService.createPost(request, userId);
 
     }
 

@@ -1,60 +1,67 @@
 package com.mwitter.service;
-
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
+
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
-import com.mwitter.dto.ProfileResponse;
+
 import com.mwitter.dto.LoginRequest;
-import com.mwitter.dto.LoginResponse; //userservice i spring e tanıtıyoruz
+import com.mwitter.dto.LoginResponse;
 import com.mwitter.dto.ProfileResponse;
+import com.mwitter.dto.RegisterRequest; //userservice i spring e tanıtıyoruz
 import com.mwitter.dto.UserResponse;
 import com.mwitter.model.User;
 import com.mwitter.repository.UserRepository;
+import com.mwitter.security.JwtService;
 
 import lombok.RequiredArgsConstructor;
-
 @Service
 @RequiredArgsConstructor
 public class UserService {
 
     private final UserRepository userRepository; //bu sınıfın calısabilmesi için userrepository sınıfını kullanıyoruz. final ile değiştirilemez hale getiriyoruz.
-private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
-    public User saveUser(User user) { //kayıt edilen kullanıcıyı tekrar kullanabilmek için saveUser metodunu oluşturuyoruz
-        if (userRepository.findByEmail(user.getEmail()).isPresent()) {
+    private final BCryptPasswordEncoder passwordEncoder;
+private final JwtService jwtService;
+    public UserResponse saveUser(RegisterRequest request) { //dışarıdan doğrudan user gelmiyor.kayıt için gerekli alanları taşıyan registerrequest geliyor
+        if (userRepository.findByEmail(request.getEmail()).isPresent()) {
 
             throw new RuntimeException("Email already exists.");//throw programın akışını durdurur ve bir hata mesajı döndürür. Burada, eğer kullanıcı zaten kayıtlıysa bir hata mesajı döndürülür.
         }
-        if (userRepository.findByUsername(user.getUsername()).isPresent()) {
+        if (userRepository.findByUsername(request.getUsername()).isPresent()) {
 
             throw new RuntimeException("Username already exists.");
 
         }
-        String hashedPassword = passwordEncoder.encode(user.getPassword());
 
-user.setPassword(hashedPassword);
+        User user = new User();//user vtabanına kaydolacak gerçek model,request veri taşıyıcı
+        user.setUsername(request.getUsername());
+        user.setEmail(request.getEmail());
+        user.setPhoneNumber(request.getPhoneNumber());
+
+        String hashedPassword = passwordEncoder.encode(request.getPassword());
+        user.setPassword(hashedPassword);
+
         user.setRegistrationDate(LocalDateTime.now());//Kullanıcının kayıt tarihini o anki zaman yapıyor
+        User savedUser = userRepository.save(user);
 
-        return userRepository.save(user);//user nesnesini mongoDB de kaydediyoruz ve kaydedilen kullanıcıyı geri döndürüyoruz
+        return convertToResponse(savedUser);
 
     }
 
     public LoginResponse login(LoginRequest loginRequest) {
+User user = userRepository.findByEmail(loginRequest.getEmail())
+            .orElseThrow(() ->//orelsethrow kullanıcı bulunmadığında zaten metodu durduruyor o yüzden opsiyonel kısmını kaldırdım
+                    new RuntimeException("Email or password is incorrect."));
 
-        Optional<User> user = userRepository.findByEmail(loginRequest.getEmail());//girilen email adresine sahip kullanıcı var mı
-        if (user.isEmpty()) {
-
-            throw new RuntimeException("Email or password is incorrect.");
-
-        }
-        if (!passwordEncoder.matches(loginRequest.getPassword(), user.get().getPassword())) {//girilen şifre ile kayıtlı şifreyi karşılaştırıyoruz. matches metodu, girilen şifreyi hashleyip kayıtlı şifre ile karşılaştırır. eşleşmezse hata mesajı döndürüyoruz
-
-            throw new RuntimeException("Email or password is incorrect.");
-
-        }
-        return new LoginResponse(user.get().getId(), user.get().getUsername(), user.get().getEmail());
+    if (!passwordEncoder.matches(
+            loginRequest.getPassword(),
+            user.getPassword()
+    )) {
+        throw new RuntimeException("Email or password is incorrect.");
+    }
+        String token = jwtService.generateToken(user.getId());
+      return convertToLoginResponse(user, token);//cevaba eklemek icin
 
     }
 
@@ -63,25 +70,18 @@ user.setPassword(hashedPassword);
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new RuntimeException("User not found."));//orElseThrow metodu, eğer kullanıcı bulunamazsa bir hata fırlatır.
 
-        return new UserResponse(//return user deseydik kullanıcıya her şey giderdi. istediğimiz alanları göndermek için UserResponse DTO(Elindeki büyük veriden sadece gerekli kısmı karşı tarafa gönderiyor.) sınıfını kullanıyoruz.
-                user.getId(),
-                user.getUsername(),
-                user.getEmail()
-        );
+        return convertToResponse(user);
     }
 
     public void followUser(String followerId, String followingId) {//void dedik çünkü  mevcut iki kullanıcıyı güncelleyeceğiz.geriye değer döndürmemiz gereken nesne yok
-        Optional<User> follower = userRepository.findById(followerId);//takip eden kullanıcıyı bulmak için findById metodunu kullanıyoruz
-        Optional<User> following = userRepository.findById(followingId);//takip edilen kullanıcıyı bulmak için findById metodunu kullanıyoruz
-        if (follower.isEmpty() || following.isEmpty()) {
-            throw new RuntimeException("User not found.");
-        }
+
+        User followerUser = getUserById(followerId);
+        User followingUser = getUserById(followingId);
         if (followerId.equals(followingId)) {//string karşılaştırdığımız için equals metodunu kullanıyoruz. kullanıcı kendini takip edemez.
             throw new RuntimeException("You cannot follow yourself.");
         }
-        User followerUser = follower.get();//opsiyonelden gerçek kullanıcıyı almak için get metodunu kullanıyoruz
-        User followingUser = following.get();
-        if (followerUser.getFollowing().contains(followingId)) {//contains metodu, bir listede belirli bir öğenin olup olmadığını kontrol eder. eğer takip eden kullanıcı zaten takip edilen kullanıcıyı takip ediyorsa hata mesajı döndürüyoruz
+
+        if (followerUser.getFollowing().contains(followingId)) {//contains metodu, bir listede belirli bir ögenin olup olmadığını kontrol eder. eğer takip eden kullanıcı zaten takip edilen kullanıcıyı takip ediyorsa hata mesajı döndürüyoruz
             throw new RuntimeException("You already follow this user.");
         }
 
@@ -94,16 +94,12 @@ user.setPassword(hashedPassword);
     }
 
     public void unfollowUser(String followerId, String followingId) {
-        Optional<User> follower = userRepository.findById(followerId);
-        Optional<User> following = userRepository.findById(followingId);
-        if (follower.isEmpty() || following.isEmpty()) {
-            throw new RuntimeException("User not found.");
-        }
+
+        User followerUser = getUserById(followerId);
+        User followingUser = getUserById(followingId);
         if (followerId.equals(followingId)) {
             throw new RuntimeException("You cannot unfollow yourself.");
         }
-        User followerUser = follower.get();
-        User followingUser = following.get();
 
         if (!followerUser.getFollowing().contains(followingId)) {
             throw new RuntimeException("You are not following this user.");
@@ -118,53 +114,35 @@ user.setPassword(hashedPassword);
     }
 
     public List<UserResponse> getFollowing(String userId) {//kullanıcının takip ettiği kullanıcıları getirmek için getFollowing metodunu oluşturuyoruz
-
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("User not found."));
+        User user = getUserById(userId);
 
         List<UserResponse> responses = new ArrayList<>();
 
         for (String followingId : user.getFollowing()) {//kullanıcının following listesindeki idleri tek tek geziyoruz
+            User followingUser = getUserById(followingId);
 
-            User followingUser = userRepository.findById(followingId)
-                    .orElseThrow(() -> new RuntimeException("User not found."));
-
-            responses.add(new UserResponse(//bulduğumuz kullanıcıyı UserResponse DTO sınıfına çeviriyoruz ve responses listesine ekliyoruz
-                    followingUser.getId(),
-                    followingUser.getUsername(),
-                    followingUser.getEmail()
-            ));
+            responses.add(convertToResponse(followingUser));
         }
 
         return responses;
     }
 
     public List<UserResponse> getFollowers(String userId) {
-
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("User not found."));
+        User user = getUserById(userId);
 
         List<UserResponse> responses = new ArrayList<>();
 
         for (String followerId : user.getFollowers()) {
+            User followerUser = getUserById(followerId);
 
-            User followerUser = userRepository.findById(followerId)
-                    .orElseThrow(() -> new RuntimeException("User not found."));
-
-            responses.add(new UserResponse(
-                    followerUser.getId(),
-                    followerUser.getUsername(),
-                    followerUser.getEmail()
-            ));
+            responses.add(convertToResponse(followerUser));
         }
 
         return responses;
     }
 
     public ProfileResponse getProfile(String userId) {
-
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("User not found."));
+        User user = getUserById(userId);
 
         return new ProfileResponse(
                 user.getId(),
@@ -175,4 +153,26 @@ user.setPassword(hashedPassword);
         );
     }
 
+    private User getUserById(String userId) {//sadece userservice kullanacağı için private. kullanıcıyı id ile bulmak için getUserById metodunu oluşturuyoruz.User nesnesi dönecek
+
+        return userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found."));
+    }
+
+    private UserResponse convertToResponse(User user) {
+
+    return new UserResponse(
+            user.getId(),
+            user.getUsername(),
+            user.getEmail()
+    );
+}
+private LoginResponse convertToLoginResponse(User user, String token){
+    return new LoginResponse(
+        user.getId(),
+        user.getUsername(),
+        user.getEmail(),
+        token
+    );
+}
 }
