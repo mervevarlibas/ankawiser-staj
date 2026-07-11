@@ -1,7 +1,8 @@
 package com.mwitter.model;
 
 import java.time.LocalDateTime;
-
+import java.util.HashSet;
+import java.util.Set;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;//Bu sınıfın MongoDB'de bir collection olduğunu söyler.
 
@@ -20,5 +21,6 @@ public class Post {
     private String content;
     private LocalDateTime createdAt;//postun oluşturulma tarihi
     private String userId;//postun sahibi olan kullanıcı ID'si
+    private Set<String> likedUserIds = new HashSet<>();//string beğenen kullanıcıların idsini tutar.set aynı değeri ikinci kez saklamaz. yani beğenen kullanıcı bir daha beğenemez.null değil boş olarak başyalacak.
 
 }

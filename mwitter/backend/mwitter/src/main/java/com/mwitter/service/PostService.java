@@ -87,6 +87,34 @@ public class PostService {
 
         return responses;
     }
+    public void likePost(String postId, String userId) {
+
+    Post post = getPostById(postId);//beğenilcek postu mongodbden bulur.yoksa hata mesajı verir
+
+    getUserById(userId);//JWT’den gelen kullanıcı id’sinin gerçekten veritabanında olup olmadığını kontrol eder
+
+    if (post.getLikedUserIds().contains(userId)) {//bu kullancı postu daha önceden begenmis mi
+        throw new RuntimeException("You already liked this post.");
+    }
+
+    post.getLikedUserIds().add(userId);//gerçek beğenme işlemi
+
+    postRepository.save(post);//update işlemi
+}
+public void unlikePost(String postId, String userId) {
+
+    Post post = getPostById(postId);
+
+    getUserById(userId);
+
+    if (!post.getLikedUserIds().contains(userId)) {// ünlem sonucu tersine çevirir
+        throw new RuntimeException("You have not liked this post.");
+    }
+
+    post.getLikedUserIds().remove(userId);//kullanıcı id’sini beğenenler arasından çıkarır
+
+    postRepository.save(post);
+}
 
     private PostResponse convertToResponse(Post post, String username) {//metodu sadece postservice kullanacağı için private.bu metodun amacı, Post nesnesini PostResponse nesnesine dönüştürmektir. PostResponse, frontend'e gönderilecek olan veri yapısını temsil eder.
 
@@ -97,12 +125,18 @@ public class PostService {
         response.setCreatedAt(post.getCreatedAt());
         response.setUsername(username);
         response.setUserId(post.getUserId());//post içindeki sahibini gösteren userid 
-
+response.setLikeCount(post.getLikedUserIds().size());//postu beğenen kullanıcı idlerinin kümesini getirir,size boyutu
         return response;
     }
 private User getUserById(String userId) {
 
     return userRepository.findById(userId)
             .orElseThrow(() -> new RuntimeException("User not found."));
+}
+public  Post getPostById(String postId) {//hem postservice hem de commentservice kullandığı icin public.public.like ve unlike işlemlerinde metod tekrarı olmasın diye
+
+    return postRepository.findById(postId)
+            .orElseThrow(() ->
+                    new RuntimeException("Post not found."));
 }
 }

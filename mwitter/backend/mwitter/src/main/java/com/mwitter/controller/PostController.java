@@ -12,10 +12,15 @@ import org.springframework.web.bind.annotation.RestController;
 import com.mwitter.dto.CreatePostRequest;
 import com.mwitter.dto.PostResponse;
 import com.mwitter.service.PostService;
+import java.time.LocalDateTime;
 
+import org.springframework.security.core.Authentication;
+
+import com.mwitter.dto.MessageResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
+
 @RestController//bu sınıf http isteklerini karşılayacak bir controller olduğunu belirtiyoruz
 @RequestMapping("/posts")//bu controllerin hangi url ile çağrılacağını belirtiyoruz
 @RequiredArgsConstructor
@@ -25,10 +30,10 @@ public class PostController {
 
     @PostMapping
     public PostResponse createPost(@Valid @RequestBody CreatePostRequest request,
-        Authentication authentication) {
-String userId = authentication.getName();
+            Authentication authentication) {
+        String userId = authentication.getName();
 
-    return postService.createPost(request, userId);
+        return postService.createPost(request, userId);
 
     }
 
@@ -44,5 +49,35 @@ String userId = authentication.getName();
 
         return postService.getPostsByUserId(userId);
 
+    }
+
+    @PostMapping("/{postId}/like")//postid urlden gelir,userid jwtden gelir
+    public MessageResponse likePost(
+            @PathVariable String postId,
+            Authentication authentication) {
+
+        String userId = authentication.getName();
+
+        postService.likePost(postId, userId);
+
+        return new MessageResponse(
+                LocalDateTime.now(),
+                "Post liked successfully."
+        );
+    }
+
+    @PostMapping("/{postId}/unlike")
+    public MessageResponse unlikePost(
+            @PathVariable String postId,
+            Authentication authentication) {
+
+        String userId = authentication.getName();
+
+        postService.unlikePost(postId, userId);
+
+        return new MessageResponse(
+                LocalDateTime.now(),
+                "Post unliked successfully."
+        );
     }
 }

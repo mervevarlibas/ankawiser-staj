@@ -1,22 +1,25 @@
 package com.mwitter.controller;
 //dışarıdan gelen isteklerin ilk karşılandığı yer
 
+import java.time.LocalDateTime;
 import java.util.List;
-
+import com.mwitter.dto.MessageResponse;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.bind.annotation.RequestMapping;
+
 import com.mwitter.dto.LoginRequest;
 import com.mwitter.dto.LoginResponse;
 import com.mwitter.dto.ProfileResponse;
-import com.mwitter.dto.UserResponse;
-import com.mwitter.model.User;
-import com.mwitter.service.UserService;
 import com.mwitter.dto.RegisterRequest;
+import com.mwitter.dto.UserResponse;
+import com.mwitter.service.UserService;
+
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
@@ -48,16 +51,22 @@ public class UserController {
 
     }
 
-    @PostMapping("/users/{followerId}/follow/{followingId}")
-    public void followUser(@PathVariable String followerId, @PathVariable String followingId) {
+    @PostMapping("/follow/{followingId}")
+    public MessageResponse followUser(@PathVariable String followingId,//takip edilecek kişinin id si url den alınır
+        Authentication authentication) {//JWT filtresinin doğruladığı kullanıcı bilgisini taşır.
 
-        userService.followUser(followerId, followingId);
+        String followerId = authentication.getName();//token içinde takip işlemi yapan kullanıcının id sini getirtir
+
+    userService.followUser(followerId, followingId);
+    return new MessageResponse(LocalDateTime.now(),"User followed successfully.");
     }
 
-    @PostMapping("/users/{followerId}/unfollow/{followingId}")
-    public void unfollowUser(@PathVariable String followerId, @PathVariable String followingId) {
-
+    @PostMapping("/unfollow/{followingId}")
+    public MessageResponse unfollowUser(@PathVariable String followingId,
+        Authentication authentication) {
+String followerId = authentication.getName();
         userService.unfollowUser(followerId, followingId);
+        return new MessageResponse(LocalDateTime.now(),"User unfollowed successfully.");
     }
 
     @GetMapping("/users/{userId}/following")

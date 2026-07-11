@@ -20,4 +20,6 @@ public class PostResponse {//bu sınıf frontend e post bilgilerini güvenli bir
     private String username;
 
     private String userId;//kullanıcı adına basınca kullanıcıya ait postları getirebilmek için userId yi de göndermemiz gerekiyor.
+
+    private int likeCount;
 }

@@ -1,4 +1,5 @@
 package com.mwitter.service;
+
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -16,13 +17,15 @@ import com.mwitter.repository.UserRepository;
 import com.mwitter.security.JwtService;
 
 import lombok.RequiredArgsConstructor;
+
 @Service
 @RequiredArgsConstructor
 public class UserService {
 
     private final UserRepository userRepository; //bu sınıfın calısabilmesi için userrepository sınıfını kullanıyoruz. final ile değiştirilemez hale getiriyoruz.
     private final BCryptPasswordEncoder passwordEncoder;
-private final JwtService jwtService;
+    private final JwtService jwtService;
+
     public UserResponse saveUser(RegisterRequest request) { //dışarıdan doğrudan user gelmiyor.kayıt için gerekli alanları taşıyan registerrequest geliyor
         if (userRepository.findByEmail(request.getEmail()).isPresent()) {
 
@@ -50,18 +53,19 @@ private final JwtService jwtService;
     }
 
     public LoginResponse login(LoginRequest loginRequest) {
-User user = userRepository.findByEmail(loginRequest.getEmail())
-            .orElseThrow(() ->//orelsethrow kullanıcı bulunmadığında zaten metodu durduruyor o yüzden opsiyonel kısmını kaldırdım
-                    new RuntimeException("Email or password is incorrect."));
+        User user = userRepository.findByEmail(loginRequest.getEmail())
+                .orElseThrow(()
+                        ->//orelsethrow kullanıcı bulunmadığında zaten metodu durduruyor o yüzden opsiyonel kısmını kaldırdım
+                        new RuntimeException("Email or password is incorrect."));
 
-    if (!passwordEncoder.matches(
-            loginRequest.getPassword(),
-            user.getPassword()
-    )) {
-        throw new RuntimeException("Email or password is incorrect.");
-    }
+        if (!passwordEncoder.matches(
+                loginRequest.getPassword(),
+                user.getPassword()
+        )) {
+            throw new RuntimeException("Email or password is incorrect.");
+        }
         String token = jwtService.generateToken(user.getId());
-      return convertToLoginResponse(user, token);//cevaba eklemek icin
+        return convertToLoginResponse(user, token);//cevaba eklemek icin
 
     }
 
@@ -153,7 +157,7 @@ User user = userRepository.findByEmail(loginRequest.getEmail())
         );
     }
 
-    private User getUserById(String userId) {//sadece userservice kullanacağı için private. kullanıcıyı id ile bulmak için getUserById metodunu oluşturuyoruz.User nesnesi dönecek
+    public  User getUserById(String userId) {//hem userservice hem de commentservice kullanacağı için public. kullanıcıyı id ile bulmak için getUserById metodunu oluşturuyoruz.User nesnesi dönecek
 
         return userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found."));
@@ -161,18 +165,19 @@ User user = userRepository.findByEmail(loginRequest.getEmail())
 
     private UserResponse convertToResponse(User user) {
 
-    return new UserResponse(
-            user.getId(),
-            user.getUsername(),
-            user.getEmail()
-    );
-}
-private LoginResponse convertToLoginResponse(User user, String token){
-    return new LoginResponse(
-        user.getId(),
-        user.getUsername(),
-        user.getEmail(),
-        token
-    );
-}
+        return new UserResponse(
+                user.getId(),
+                user.getUsername(),
+                user.getEmail()
+        );
+    }
+
+    private LoginResponse convertToLoginResponse(User user, String token) {
+        return new LoginResponse(
+                user.getId(),
+                user.getUsername(),
+                user.getEmail(),
+                token
+        );
+    }
 }
