@@ -16,31 +16,31 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class CommentService {
 
-    private final CommentRepository commentRepository;
+    private final CommentRepository commentRepository;//Yorumu MongoDB’ye kaydetmek ve yorumları çekmek için.
 
     private final UserService userService;//jwtden gelen userid ile kullanıcıyı bulacağız
 
     private final PostService postService;//yorum yapılacak postun var olup olmadığını öğrenmek için
 
     public CommentResponse createComment(
-        CreateCommentRequest request,
-        String postId,
-        String userId
+        CreateCommentRequest request, //bodyden gelir
+        String postId, //urlden gelir
+        String userId //jwtden gelir
 ) {
 
-    User user = userService.getUserById(userId);
+    User user = userService.getUserById(userId); //JWT’deki id gerçekten var mı kontrol edilir. ve username response için lazım
 
-    Post post = postService.getPostById(postId);
+    Post post = postService.getPostById(postId); //Olmayan bir posta yorum yapılmasını engeller.
 
-    Comment comment = new Comment();
+    Comment comment = new Comment(); //Boş yorum nesnesi oluşturulur.
 
-    comment.setContent(request.getContent());
+    comment.setContent(request.getContent()); //Yorum metnini request’ten alır.
 
-    comment.setCreatedAt(LocalDateTime.now());
+    comment.setCreatedAt(LocalDateTime.now()); //Yorum zamanını backend verir.
 
-    comment.setUserId(user.getId());
+    comment.setUserId(user.getId()); //Yorum sahibini JWT kullanıcısı yapar.
 
-    comment.setPostId(post.getId());
+    comment.setPostId(post.getId()); //Yorumu URL’deki posta bağlar.
 
     Comment savedComment = commentRepository.save(comment);//savedcomment mongodbye kaydedilmiş yorum
 
@@ -49,10 +49,10 @@ public class CommentService {
 }
 private CommentResponse convertToResponse(//bunları alıp frontend'in anlayacağı CommentResponse nesnesini oluşturuyor
         Comment comment,
-        String username
+        String username// ayrı geliyor çünkü comment içinde sadece useridvar
 ) {
-
-    return new CommentResponse(
+// bu metod Comment + username = commentresponse yapar
+    return new CommentResponse( 
             comment.getId(),
             comment.getContent(),
             comment.getCreatedAt(),
@@ -70,12 +70,12 @@ public List<CommentResponse> getCommentsByPostId(String postId) {
 
     List<CommentResponse> responses = new ArrayList<>();//Frontend’e döndüreceğimiz boş listeyi oluşturur.
 
-    for (Comment comment : comments) {//yorumları tek tek gezer//yorumları tek tek gezer
+    for (Comment comment : comments) {//yorumları tek tek gezer 
 
-        User user = userService.getUserById(comment.getUserId());//her yorumun sahibini bulur//her yorumun sahibini bulur
+        User user = userService.getUserById(comment.getUserId());//her yorumun sahibini bulur 
 
         responses.add(
-                convertToResponse(comment, user.getUsername())//dtoya çevirip listeye ekler//dtoya çevirip listeye ekler
+                convertToResponse(comment, user.getUsername())//dtoya çevirip listeye ekler
         );
     }
 

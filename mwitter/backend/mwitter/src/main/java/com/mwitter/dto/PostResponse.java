@@ -9,7 +9,7 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class PostResponse {//bu sınıf frontend e post bilgilerini güvenli bir şekilde göndermek için. Veritabanına kaydedilmez sadece cevap oluşturmak için kullanılır.
+public class PostResponse {
 
     private String id;
 
@@ -17,9 +17,11 @@ public class PostResponse {//bu sınıf frontend e post bilgilerini güvenli bir
 
     private LocalDateTime createdAt;
 
+    private String userId;
+
     private String username;
 
-    private String userId;//kullanıcı adına basınca kullanıcıya ait postları getirebilmek için userId yi de göndermemiz gerekiyor.
-
     private int likeCount;
+
+    private boolean likedByCurrentUser;//ben begendim mi
 }

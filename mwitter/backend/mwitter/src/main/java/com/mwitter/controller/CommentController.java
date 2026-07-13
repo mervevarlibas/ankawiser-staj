@@ -16,14 +16,14 @@ import lombok.RequiredArgsConstructor;
 import java.util.List;
 import org.springframework.web.bind.annotation.GetMapping;
 
-@RestController
+@RestController //Metotların döndürdüğü Java nesnelerini JSON’a çevirir.
 @RequestMapping("/posts")
 @RequiredArgsConstructor
 public class CommentController {
 
     private final CommentService commentService;
 
-    @PostMapping("/{postId}/comments")
+    @PostMapping("/{postId}/comments") //yorum oluşturma endpointi
     public CommentResponse createComment(
             @PathVariable String postId,//URL’deki post id’sini Java değişkenine alır
             @Valid @RequestBody CreateCommentRequest request,//Body’de gelen JSON’u CreateCommentRequest nesnesine çevirir ve içindeki @NotBlank, @Size kurallarını çalıştırır.

@@ -21,6 +21,6 @@ public class Post {
     private String content;
     private LocalDateTime createdAt;//postun oluşturulma tarihi
     private String userId;//postun sahibi olan kullanıcı ID'si
-    private Set<String> likedUserIds = new HashSet<>();//string beğenen kullanıcıların idsini tutar.set aynı değeri ikinci kez saklamaz. yani beğenen kullanıcı bir daha beğenemez.null değil boş olarak başyalacak.
+    private Set<String> likedUserIds = new HashSet<>();//string beğenen kullanıcıların idsini tutar.set aynı değeri ikinci kez saklamaz. yani beğenen kullanıcı bir daha beğenemez.null değil boş olarak başyalacak.set olmasının sebbei aynı idyi iki kez tutmamakidyi iki kez tutmamak
 
 }

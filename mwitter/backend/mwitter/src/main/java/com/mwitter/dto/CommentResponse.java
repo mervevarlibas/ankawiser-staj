@@ -1,4 +1,4 @@
-package com.mwitter.dto;
+package com.mwitter.dto; //Bu DTO frontend’e gönderilen yorum cevabıdır.
 import java.time.LocalDateTime;
 
 import lombok.AllArgsConstructor;

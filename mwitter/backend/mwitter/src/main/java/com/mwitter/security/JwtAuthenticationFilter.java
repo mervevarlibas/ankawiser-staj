@@ -1,4 +1,4 @@
-package com.mwitter.security;
+package com.mwitter.security;//bu dosyanın görevi istekle gelen JWT tokenını okuyup kullanıcının gerçekten kim olduğunu Spring Security'ye söylemek.
 
 import java.io.IOException;
 import java.util.List;
@@ -13,7 +13,7 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
-@Component
+@Component// bu sınıfı otomatik oluştur
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtService jwtService;
@@ -23,10 +23,10 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     }
 
     @Override
-    protected void doFilterInternal(
-            HttpServletRequest request,
-            HttpServletResponse response,
-            FilterChain filterChain)
+    protected void doFilterInternal(//bu metod her istekte otomatik çağrılır.
+            HttpServletRequest request,//gelen istek
+            HttpServletResponse response,//dönecek cevap
+            FilterChain filterChain)//Sıradaki filtreye geç. veya controllera devam et
             throws ServletException, IOException {
 
         String authorizationHeader =//http isteğinin authorization başlığını getirir.
@@ -43,7 +43,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         if (jwtService.isTokenValid(token)) {
 
-            String userId = jwtService.extractUserId(token);
+            String userId = jwtService.extractUserId(token);//Bu artıklogin olan kullanıcınınid'si.
 
             UsernamePasswordAuthenticationToken authentication =
                     new UsernamePasswordAuthenticationToken(//kimlik oluşturma. userid giriş yapan kullanıcının kimliği,null şifreyi almıyoruz,yetki listesi(yok daha)

@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="tr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Mwitter</title>
+
+    <link rel="stylesheet" href="css/style.css">
+</head>
+
+<body class="home-page">
+
+    <div class="home-layout">
+
+        <!-- SOL MENÜ -->
+        <aside class="left-sidebar">
+
+            <div class="sidebar-inner">
+
+                <a href="index.html" class="sidebar-logo">
+                    Mwitter
+                </a>
+
+                <nav class="main-nav">
+
+                    <a href="index.html" class="nav-item active">
+                        <span class="nav-icon">⌂</span>
+                        <span>Ana Sayfa</span>
+                    </a>
+
+                    <a href="profile.html" class="nav-item">
+                        <span class="nav-icon">♡</span>
+                        <span>Profil</span>
+                    </a>
+
+                    <button type="button" class="nav-item nav-button" id="logoutButton">
+                        <span class="nav-icon">↪</span>
+                        <span>Çıkış Yap</span>
+                    </button>
+
+                </nav>
+
+                <div class="sidebar-user-card">
+
+                    <div class="avatar">
+                        <span id="sidebarAvatarLetter">M</span>
+                    </div>
+
+                    <div class="sidebar-user-info">
+                        <strong id="sidebarUsername">Kullanıcı</strong>
+                        <small>Mwitter hesabı</small>
+                    </div>
+
+                </div>
+
+            </div>
+
+        </aside>
+
+        <!-- ORTA AKIŞ -->
+        <main class="feed-column">
+
+            <header class="feed-header">
+
+                <div>
+                    <p class="eyebrow">Mwitter akışı</p>
+                    <h1>Ana Sayfa</h1>
+                </div>
+
+                <div class="welcome-badge" id="welcome">
+                    Hoş geldin
+                </div>
+
+            </header>
+
+            <section class="composer-card">
+
+                <div class="composer-avatar avatar">
+                    <span id="composerAvatarLetter">M</span>
+                </div>
+
+                <div class="composer-content">
+
+                    <textarea
+                        id="content"
+                        maxlength="200"
+                        placeholder="Bugün ne paylaşmak istersin?"
+                    ></textarea>
+
+                    <div class="composer-footer">
+
+                        <span id="characterCount">0 / 200</span>
+
+                        <button
+                            type="button"
+                            id="createPostButton"
+                            class="primary-button composer-button"
+                        >
+                            Paylaş
+                        </button>
+
+                    </div>
+
+                </div>
+
+            </section>
+
+            <section class="timeline-section">
+
+                <div class="section-title-row">
+                    <h2>Senin için</h2>
+                    <span class="soft-label">En yeniler</span>
+                </div>
+
+                <div id="timeline" class="timeline-list">
+
+                    <div class="loading-card">
+                        Gönderiler yükleniyor...
+                    </div>
+
+                </div>
+
+            </section>
+
+        </main>
+
+        <!-- SAĞ PANEL -->
+        <aside class="right-sidebar">
+
+            <div class="right-panel">
+
+                <section class="search-card">
+
+                    <label for="userSearch">
+                        Kullanıcı ara
+                    </label>
+
+                    <div class="search-input-wrap">
+                        <span>⌕</span>
+
+                        <input
+                            type="text"
+                            id="userSearch"
+                            placeholder="Kullanıcı adı yaz"
+                        >
+                    </div>
+
+                    <div id="searchResults" class="search-results"></div>
+
+                </section>
+
+                <section class="suggestion-card">
+
+                    <div class="section-title-row">
+                        <h2>Keşfet</h2>
+                    </div>
+
+                    <p>
+                        Yeni kullanıcılar bul, takip et ve kendi Mwitter çevreni oluştur.
+                    </p>
+
+                    <div class="decorative-flower-line">
+                        <span>❀</span>
+                        <span>✿</span>
+                        <span>❀</span>
+                    </div>
+
+                </section>
+
+                <footer class="home-footer">
+                    <span>Mwitter</span>
+                    <span>·</span>
+                    <span>2026</span>
+                </footer>
+
+            </div>
+
+        </aside>
+
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="js/home.js"></script>
+
+</body>
+
+</html>
