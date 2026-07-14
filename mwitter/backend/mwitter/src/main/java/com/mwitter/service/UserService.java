@@ -46,8 +46,8 @@ public class UserService {
         user.setPassword(hashedPassword);
 
         user.setRegistrationDate(LocalDateTime.now());//Kullanıcının kayıt tarihini o anki zaman yapıyor
-        User savedUser = userRepository.save(user);
 
+        User savedUser = userRepository.save(user);
         return convertToResponse(savedUser);
 
     }
@@ -64,6 +64,7 @@ public class UserService {
         )) {
             throw new RuntimeException("Email or password is incorrect.");
         }
+
         String token = jwtService.generateToken(user.getId());
         return convertToLoginResponse(user, token);//cevaba eklemek icin
 
@@ -180,4 +181,17 @@ public class UserService {
                 token
         );
     }
+
+    public List<UserResponse> searchUsers(String username) {
+
+    List<User> users = userRepository.findByUsernameContainingIgnoreCase(username);
+
+    List<UserResponse> responses = new ArrayList<>();
+
+    for (User user : users) {
+        responses.add(convertToResponse(user));
+    }
+
+    return responses;
+}
 }

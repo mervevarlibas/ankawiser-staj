@@ -1,43 +1,39 @@
-$(document).ready(function () {
+$(document).ready(function () {//sayfa tamamen yüklendiğinde bu kod çalışsın
 
-    const token = localStorage.getItem("token");//çünkü login olduk
+    const token = localStorage.getItem("token"); // çünkü login olduğumuzda backend bana token verdi tarayıcıya kaydettik, burda onu geri alıyorum
     const username = localStorage.getItem("username");
 
-    if (!token) {
-        window.location.href = "login.html";//token yoksa login ekranına dön
+    if (!token) {// token yoksa login ekranına dön
+        window.location.href = "login.html"; 
         return;
     }
 
     $("#welcome").text("Hoş geldin, " + username);
-
     $("#sidebarUsername").text(username);
 
-    const firstLetter = username
-        ? username.charAt(0).toUpperCase()
-        : "M";
+    const firstLetter = username//kullanıcı adı merve
+        ? username.charAt(0).toUpperCase()//ilk harfini alıyor
+        : "M";//username gelmezse m koy
 
-    $("#sidebarAvatarLetter").text(firstLetter);
-    $("#composerAvatarLetter").text(firstLetter);
+    $("#sidebarAvatarLetter").text(firstLetter);//profil ikonuna harfi koyuyor
+    $("#composerAvatarLetter").text(firstLetter);//post yazdığımız yerdeki avatar harfi
 
     $("#content").on("input", function () {
-
         const length = $(this).val().length;
-
         $("#characterCount").text(length + " / 200");
     });
 
     $("#logoutButton").click(function () {
-
-        localStorage.removeItem("token");//çıkış yapınca siliyor
+        localStorage.removeItem("token"); // çıkış yapınca siliyor
         localStorage.removeItem("userId");
         localStorage.removeItem("username");
 
-        window.location.href = "login.html";//token olmadığı için tekrar giriş yapman lazım
+        window.location.href = "login.html"; // token olmadığı için tekrar giriş yapman lazım
     });
 
-    $("#createPostButton").click(function () {
+    $("#createPostButton").click(function () {//butona basınca çalışır
 
-        const content = $("#content").val().trim();
+        const content = $("#content").val().trim();//textarea’daki yazıyı alır
 
         if (content === "") {
             alert("Gönderi boş olamaz.");
@@ -46,34 +42,23 @@ $(document).ready(function () {
 
         $.ajax({
             url: "http://localhost:8080/posts",
-            method: "POST",
-
+            method: "POST",//backende gidiyor postcontroller>createpost
             headers: {
-                Authorization: "Bearer " + token
+                Authorization: "Bearer " + token//jwt gönderiyoruz
             },
-
             contentType: "application/json",
-
-            data: JSON.stringify({
-                content: content
-            }),
+            data: JSON.stringify({ content: content }),//backende giden veri json formatında
 
             success: function () {
-
                 $("#content").val("");
                 $("#characterCount").text("0 / 200");
-
-                loadTimeline();
+                loadTimeline();//timeline yenilenir
             },
 
-            error: function (xhr) {
-
+            error: function (xhr) {//xhr AJAX error objesi
                 let message = "Gönderi paylaşılamadı.";
 
-                if (
-                    xhr.responseJSON &&
-                    xhr.responseJSON.message
-                ) {
+                if (xhr.responseJSON && xhr.responseJSON.message) {//sadece mesaj kısmını alıyoruz
                     message = xhr.responseJSON.message;
                 }
 
@@ -82,104 +67,257 @@ $(document).ready(function () {
         });
     });
 
-    /*
-     * Postlar JavaScript ile sonradan oluşturulduğu için
-     * doğrudan .like-button üzerine değil, #timeline üzerine
-     * click dinleyicisi ekliyoruz.
-     */
-    $("#timeline").on("click", ".like-button", function () { //frontendde kalp butonuna basınca çalışan kısım
+    // Arama sonucundaki kullanıcı adına tıklayınca profile git
+    $("#searchResults").on("click", ".search-username", function () {//id si searchresults olanı seç, kullanıcı adına tıklanınca çalıştır
+        const userId = $(this).data("user-id");//this tıklanan element,htmlden veri alır idyi atar
+        window.location.href = "profile.html?userId=" + userId;//aldığı idyi kullanır
+    });
 
-        const button = $(this); //this, tıklanan like butonudur.jquery nesnesine çevirdik
-        const postId = button.data("post-id"); //post idsini alma
+    // Arama kutusu
+    $("#userSearch").on("input", function () {//kullanıcı inputa her harf yazdığında çalışır
 
-        const isLiked = //beğenildi mi kontrolü
-            String(button.attr("data-liked")) === "true";
+        const query = $(this).val().trim();//input içindeki yazıyı alır.this=input,val=içindeki yazı,trim=boşlukarı sil.
 
-        const endpoint = isLiked //Bu ternary operator’dür if elsein kısa hali
-            ? "/unlike"
-            : "/like";
+        if (query.length < 2) {//tek harfle arama, gereksiz api çağırımını engellemek
+            $("#searchResults").empty();//sonucu temizle işlemi durdur
+            return;
+        }
 
-        $.ajax({ //ajax isteği url jwt header içinde gider
-            url:
-                "http://localhost:8080/posts/" +
-                postId +
-                endpoint,
-
-            method: "POST",
-
+        $.ajax({//burda backende istek atıyoruz
+            url: "http://localhost:8080/users/search?username=" + query,//usercontroller>search e gider backendde,query=merve mesela
+            method: "GET",
             headers: {
                 Authorization: "Bearer " + token
             },
 
-            success: function () { //başarılı olursa timeline yeniden çekilir çünkü like sayısı değişti
-                loadTimeline();
+            success: function (users) {
+
+                $("#searchResults").empty();//eski arama silinir
+
+                if (users.length === 0) {//liste boşsa
+                    $("#searchResults").append("<p>Kullanıcı bulunamadı</p>");
+                    return;
+                }
+
+                const currentUserId = localStorage.getItem("userId");//kendi user id m anlamadım bunu
+
+                for (const user of users) {//gelen kullanıcıları tek tek gezer
+                    const isFollowed = user.followedByCurrentUser;//bunu takip ediyor musun
+//ekrana yeni kullanıcı ekler,data user id tıklayınca id alırız
+                    $("#searchResults").append(`
+                        <div class="search-item">
+
+                            <span class="search-username"
+                                  data-user-id="${user.id}">
+                                  ${user.username}
+                            </span>
+
+                            ${
+                                user.id === currentUserId//eğer bu bensem buton gösterme
+                                ? ""
+                                : `<button class="follow-user-btn"
+                                        data-user-id="${user.id}">
+                                    ${isFollowed ? "Takip Ediliyor" : "Takip Et"}//buna göre buton değişir
+                                   </button>`
+                            }
+
+                        </div>
+                    `);
+                }
+            },
+
+            error: function () {//backendde sıkıntı olursa
+                $("#searchResults").html("<p>Hata oluştu</p>");
+            }
+        });
+    });
+
+    // Arama sonucundaki takip butonu
+    $("#searchResults").on("click", ".follow-user-btn", function () {//searchresults içindeki follow butonuna basılırsa çalış
+
+        const targetUserId = $(this).data("user-id");//tıklanan kullanıcının id si
+        const button = $(this);//text değiştirmek için butonu aldık
+
+        const isFollowing = button.text().trim() === "Takip Ediliyor";//butona bakarak anlıyoruz
+
+        const url = isFollowing//hangi apiye gidecek
+            ? "http://localhost:8080/users/unfollow/" + targetUserId
+            : "http://localhost:8080/users/follow/" + targetUserId;
+
+        $.ajax({//backende istek
+            url: url,
+            method: "POST",//veri değiştiriyoruz
+            headers: {
+                Authorization: "Bearer " + token
+            },
+
+            success: function () {
+                button.text(isFollowing ? "Takip Et" : "Takip Ediliyor");//arayüzü günceller.öncesi>sonrası
             },
 
             error: function (xhr) {
+                console.log(xhr);//hata olursa hatayı console a bas
+                alert("İşlem başarısız");
+            }
+        });
+    });
 
-                let message = "Beğeni işlemi yapılamadı.";
+    $("#timeline").on("click", ".like-button", function () {//tıklanınca çalış
 
-                if (
-                    xhr.responseJSON &&
-                    xhr.responseJSON.message
-                ) {
+        const button = $(this);//tıklanan butonu al
+        const postId = button.data("post-id");//post id al
+        const isLiked = String(button.attr("data-liked")) === "true";//like durumu htmlden beğenildi mi diye geliyor
+
+        const endpoint = isLiked ? "/unlike" : "/like";//hangi endpoint olduğuna karar verir
+
+        $.ajax({//backende git
+            url: "http://localhost:8080/posts/" + postId + endpoint,
+            method: "POST",
+            headers: {
+                Authorization: "Bearer " + token
+            },
+
+            success: function () {
+                loadTimeline();//başarılı olursa timelinei tekrar çeker çünkü kalp rengi ve like sayısı değişti
+            },
+
+            error: function (xhr) {
+                let message = "Beğeni işlemi yapılamadı.";//normal hata mesajı
+
+                if (xhr.responseJSON && xhr.responseJSON.message) {//backend hata mesajı varsaa onu göster
                     message = xhr.responseJSON.message;
                 }
 
                 alert(message);
             }
         });
+    });
+
+    $("#timeline").on("click", ".post-username", function () {//timeline içindeki post username tıklanınca çalış
+
+        const userId = $(this).data("user-id");//tıklanan kullanıcının idsini al
+
+        if (!userId) {//id yoksa işlemi durdur
+            alert("UserId bulunamadı!");
+            return;
+        }
+
+        window.location.href = "profile.html?userId=" + userId;//profil sayfasına yönlendir
+    });
+
+    // Yorumlar butonuna tıklayınca aç/kapat
+    $("#timeline").on("click", ".comment-button", function () {
+
+        const postId = $(this).data("post-id");//tıklanan postun idsini al
+        const commentsArea = $("#comments-" + postId);// o posta ait yorum alanını seç
+
+        // Zaten açıksa kapat
+        if (commentsArea.is(":visible") && commentsArea.data("loaded")) {//visible ekranda açık mı, loaded daha önce yüklenmiş mi
+            commentsArea.slideUp();//kapat
+            return;
+        }
+
+        loadComments(postId);//ilk kez açılıyorsa backende gider GET /posts/{postId}/comments getirir
+        commentsArea.slideDown();//yorum alanını aç
+    });
+
+    // Yorum gönder butonuna tıklayınca
+    $("#timeline").on("click", ".submit-comment-btn", function () {
+
+        const postId = $(this).data("post-id");
+        const input = $("#comment-input-" + postId);//her postun kendi input alanı var doğru olanı buluyor
+        const content = input.val().trim();//yazılan yorumu al input icindeki yazı boşlukları sil
+
+        if (content === "") {
+            return;
+        }
+
+        $.ajax({
+            url: "http://localhost:8080/posts/" + postId + "/comments",
+            method: "POST",
+            headers: {
+                Authorization: "Bearer " + token
+            },
+            contentType: "application/json",//json gönderme
+            data: JSON.stringify({ content: content }),
+
+            success: function () {
+                input.val("");//başarılı olursa input temizlenir
+                loadComments(postId);//yorumları tekrar yükler
+            },
+
+            error: function (xhr) {
+                let message = "Yorum gönderilemedi.";
+
+                if (xhr.responseJSON && xhr.responseJSON.message) {
+                    message = xhr.responseJSON.message;
+                }
+
+                alert(message);
+            }
+        });
+    });
+
+    // Enter'a basınca da yorum gönderilsin
+    $("#timeline").on("keypress", ".comment-input", function (e) {//keypress klavyeden tuşa basınca tetiklenir
+        if (e.which === 13) {//13 enter tuşu
+            $(this).siblings(".submit-comment-btn").click();
+        }
+    });
+
+    $("#profileLink").click(function (e) {//sol menüdeki profil linkine tıklanınca
+        e.preventDefault();//linkin normal davranışını iptal eder
+
+        const userId = localStorage.getItem("userId");
+
+        if (!userId) {
+            alert("Kullanıcı bilgisi bulunamadı.");
+            return;
+        }
+
+        window.location.href = "profile.html?userId=" + userId;
     });
 
     loadTimeline();
 });
 
 
-function loadTimeline() {
+function loadTimeline() {//timeline i yükleyen fonksiyon
 
-    const token = localStorage.getItem("token");
+    const token = localStorage.getItem("token");//backende kim olduğunu söylemek için
 
-    $.ajax({
+    $.ajax({//GET /posts/timeline backend postcontroller>gettimeline
         url: "http://localhost:8080/posts/timeline",
         method: "GET",
-
         headers: {
             Authorization: "Bearer " + token
         },
 
         success: function (posts) {
 
-            $("#timeline").empty();
+            $("#timeline").empty();//eskileri sil
 
             if (posts.length === 0) {
-
                 $("#timeline").append(`
                     <div class="empty-card">
                         Timeline'ında henüz gönderi yok.
                     </div>
                 `);
-
                 return;
             }
 
-            for (const post of posts) {
+            for (const post of posts) {//her post için çalış
 
                 const formattedDate =
-                    new Date(post.createdAt)
-                        .toLocaleString("tr-TR");
-
+                    new Date(post.createdAt).toLocaleString("tr-TR");//backendden gelen tarih okunabilir hale gelir
+//postu ekrana basar
                 $("#timeline").append(`
-                    <article
-                        class="post"
-                        data-post-id="${post.id}"
-                    >
+                    <article class="post" data-post-id="${post.id}">
 
                         <div class="post-header">
 
                             <div class="avatar post-avatar">
-                                ${post.username
-                                    .charAt(0)
-                                    .toUpperCase()}
+                                ${post.username.charAt(0).toUpperCase()}
                             </div>
 
                             <div class="post-user-info">
@@ -192,43 +330,26 @@ function loadTimeline() {
                                     ${post.username}
                                 </button>
 
-                                <small>
-                                    ${formattedDate}
-                                </small>
+                                <small>${formattedDate}</small>
 
                             </div>
 
                         </div>
 
-                        <p class="post-content">
-                            ${post.content}
-                        </p>
+                        <p class="post-content">${post.content}</p>
 
                         <div class="post-actions">
 
                             <button
                                 type="button"
-                                class="
-                                    post-action
-                                    like-button
-                                    ${post.likedByCurrentUser
-                                        ? "liked"
-                                        : ""}
-                                "
+                                class="post-action like-button ${post.likedByCurrentUser ? "liked" : ""}"
                                 data-post-id="${post.id}"
                                 data-liked="${post.likedByCurrentUser}"
                             >
-
                                 <span class="like-icon">
-                                    ${post.likedByCurrentUser
-                                        ? "♥"//beğenilmişse
-                                        : "♡"}
+                                    ${post.likedByCurrentUser ? "♥" : "♡"}
                                 </span>
-
-                                <span> 
-                                    ${post.likeCount} 
-                                </span>
-
+                                <span>${post.likeCount}</span>
                             </button>
 
                             <button
@@ -242,10 +363,7 @@ function loadTimeline() {
 
                         </div>
 
-                        <div
-                            class="comments-area"
-                            id="comments-${post.id}"
-                        ></div>
+                        <div class="comments-area" id="comments-${post.id}"></div>
 
                     </article>
                 `);
@@ -255,16 +373,79 @@ function loadTimeline() {
         error: function (xhr) {
 
             if (xhr.status === 401 || xhr.status === 403) {
-
                 localStorage.removeItem("token");
                 localStorage.removeItem("userId");
                 localStorage.removeItem("username");
-
                 window.location.href = "login.html";
                 return;
             }
 
             alert("Timeline yüklenemedi.");
+        }
+    });
+}
+
+
+function loadComments(postId) {//seçilen postun yorumlarını getirir
+
+    const token = localStorage.getItem("token");
+    const commentsArea = $("#comments-" + postId);//doğru postun yorum alanını bulur
+
+    $.ajax({
+        url: "http://localhost:8080/posts/" + postId + "/comments",
+        method: "GET",
+        headers: {
+            Authorization: "Bearer " + token
+        },
+
+        success: function (comments) {
+
+            commentsArea.empty();//eski yorumları sil
+            commentsArea.data("loaded", true);
+
+            if (comments.length === 0) {
+                commentsArea.append("<p class=\"no-comments\">Henüz yorum yok.</p>");
+            } else {
+                for (const comment of comments) {//yorumları bas
+
+                    const formattedDate =
+                        new Date(comment.createdAt).toLocaleString("tr-TR");
+
+                    commentsArea.append(`
+                        <div class="comment-item">
+                            <strong>${comment.username}</strong>
+                            <span class="comment-date">${formattedDate}</span>
+                            <p>${comment.content}</p>
+                        </div>
+                    `);
+                }
+            }
+
+            // Yorum ekleme kutusu (her açılışta tekrar eklenmesin diye kontrol et)
+            if (commentsArea.find(".comment-input").length === 0) {
+                commentsArea.append(`
+                    <div class="comment-form">
+                        <input
+                            type="text"
+                            class="comment-input"
+                            id="comment-input-${postId}"
+                            maxlength="200"
+                            placeholder="Yorum yaz..."
+                        />
+                        <button
+                            type="button"
+                            class="submit-comment-btn"
+                            data-post-id="${postId}"
+                        >
+                            Gönder
+                        </button>
+                    </div>
+                `);
+            }
+        },
+
+        error: function () {
+            commentsArea.html("<p>Yorumlar yüklenemedi.</p>");
         }
     });
 }

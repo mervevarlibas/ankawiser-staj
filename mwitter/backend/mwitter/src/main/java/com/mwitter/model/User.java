@@ -28,4 +28,5 @@ public class User {
 
     private List<String> following = new ArrayList<>();
     private List<String> followers = new ArrayList<>();
+
 }

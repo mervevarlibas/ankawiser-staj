@@ -44,12 +44,11 @@ public class UserController {
 
     }
 
-    @GetMapping("/search")
-    public UserResponse searchUser(@RequestParam String username) {//@RequestParam ile url deki username yi alıyoruz ve searchUser metoduna gönderiyoruz
+  @GetMapping("/search")
+public List<UserResponse> searchUsers(@RequestParam String username) {
 
-        return userService.findByUsername(username);
-
-    }
+    return userService.searchUsers(username);
+}
 
     @PostMapping("/follow/{followingId}")
     public MessageResponse followUser(@PathVariable String followingId,//takip edilecek kişinin id si url den alınır
@@ -69,17 +68,17 @@ String followerId = authentication.getName();
         return new MessageResponse(LocalDateTime.now(),"User unfollowed successfully.");
     }
 
-    @GetMapping("/users/{userId}/following")
+    @GetMapping("/{userId}/following")
     public List<UserResponse> getFollowing(@PathVariable String userId) {
 
         return userService.getFollowing(userId);
     }
- @GetMapping("/users/{userId}/followers")
+ @GetMapping("/{userId}/followers")
 public List<UserResponse> getFollowers(@PathVariable String userId) {
 
     return userService.getFollowers(userId);
 }
-@GetMapping("/users/{userId}")
+@GetMapping("/{userId}")
 public ProfileResponse getProfile(@PathVariable String userId) {
 
     return userService.getProfile(userId);

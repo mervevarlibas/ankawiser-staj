@@ -1214,3 +1214,100 @@ body {
     display: inline-block;
     transition: transform 0.2s ease, color 0.2s ease;
 }
+.profile-header {
+    border-bottom: 1px solid var(--pink-border);
+}
+
+.profile-banner {
+    height: 120px;
+    background: linear-gradient(135deg, #f8cfdb, #e8a9bd);
+}
+
+.profile-info {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    padding: 16px 24px;
+}
+
+.profile-avatar {
+    width: 70px;
+    height: 70px;
+    border-radius: 50%;
+    background: #fff;
+    border: 3px solid white;
+    display: grid;
+    place-items: center;
+    font-size: 24px;
+    font-weight: bold;
+}
+
+.profile-text {
+    flex: 1;
+}
+
+.profile-stats {
+    display: flex;
+    gap: 16px;
+    margin-top: 6px;
+    font-size: 14px;
+}
+.search-username {
+    cursor: pointer;
+    text-decoration: underline;
+    font-weight: 500;
+}
+
+.search-username:hover {
+    color: #d63384;
+}
+.modal-overlay {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0,0,0,0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+}
+.modal-box {
+    background: #fff;
+    width: 320px;
+    max-height: 400px;
+    overflow-y: auto;
+    border-radius: 8px;
+    padding: 16px;
+}
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+}
+.follow-list-item {
+    padding: 8px 0;
+    cursor: pointer;
+    border-bottom: 1px solid #eee;
+}
+.comments-area {
+    display: none;
+    margin-top: 8px;
+}
+.comment-item {
+    padding: 6px 0;
+    border-top: 1px solid #eee;
+}
+.comment-date {
+    font-size: 0.8em;
+    color: #888;
+    margin-left: 6px;
+}
+.comment-form {
+    display: flex;
+    gap: 6px;
+    margin-top: 8px;
+}
+.comment-input {
+    flex: 1;
+    padding: 4px 8px;
+}
