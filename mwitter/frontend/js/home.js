@@ -1,110 +1,127 @@
-$(document).ready(function () {//sayfa tamamen yüklendiğinde bu kod çalışsın
+$(document).ready(function() { //sayfa tamamen yüklendiğinde bu kod çalışsın
 
-    const token = localStorage.getItem("token"); // çünkü login olduğumuzda backend bana token verdi tarayıcıya kaydettik, burda onu geri alıyorum
-    const username = localStorage.getItem("username");
+            const token = localStorage.getItem("token"); // çünkü login olduğumuzda backend bana token verdi tarayıcıya kaydettik, burda onu geri alıyorum
+            const username = localStorage.getItem("username");
 
-    if (!token) {// token yoksa login ekranına dön
-        window.location.href = "login.html"; 
-        return;
-    }
-
-    $("#welcome").text("Hoş geldin, " + username);
-    $("#sidebarUsername").text(username);
-
-    const firstLetter = username//kullanıcı adı merve
-        ? username.charAt(0).toUpperCase()//ilk harfini alıyor
-        : "M";//username gelmezse m koy
-
-    $("#sidebarAvatarLetter").text(firstLetter);//profil ikonuna harfi koyuyor
-    $("#composerAvatarLetter").text(firstLetter);//post yazdığımız yerdeki avatar harfi
-
-    $("#content").on("input", function () {
-        const length = $(this).val().length;
-        $("#characterCount").text(length + " / 200");
-    });
-
-    $("#logoutButton").click(function () {
-        localStorage.removeItem("token"); // çıkış yapınca siliyor
-        localStorage.removeItem("userId");
-        localStorage.removeItem("username");
-
-        window.location.href = "login.html"; // token olmadığı için tekrar giriş yapman lazım
-    });
-
-    $("#createPostButton").click(function () {//butona basınca çalışır
-
-        const content = $("#content").val().trim();//textarea’daki yazıyı alır
-
-        if (content === "") {
-            alert("Gönderi boş olamaz.");
-            return;
-        }
-
-        $.ajax({
-            url: "http://localhost:8080/posts",
-            method: "POST",//backende gidiyor postcontroller>createpost
-            headers: {
-                Authorization: "Bearer " + token//jwt gönderiyoruz
-            },
-            contentType: "application/json",
-            data: JSON.stringify({ content: content }),//backende giden veri json formatında
-
-            success: function () {
-                $("#content").val("");
-                $("#characterCount").text("0 / 200");
-                loadTimeline();//timeline yenilenir
-            },
-
-            error: function (xhr) {//xhr AJAX error objesi
-                let message = "Gönderi paylaşılamadı.";
-
-                if (xhr.responseJSON && xhr.responseJSON.message) {//sadece mesaj kısmını alıyoruz
-                    message = xhr.responseJSON.message;
-                }
-
-                alert(message);
+            if (!token) { // token yoksa login ekranına dön
+                window.location.href = "login.html";
+                return;
             }
-        });
-    });
 
-    // Arama sonucundaki kullanıcı adına tıklayınca profile git
-    $("#searchResults").on("click", ".search-username", function () {//id si searchresults olanı seç, kullanıcı adına tıklanınca çalıştır
-        const userId = $(this).data("user-id");//this tıklanan element,htmlden veri alır idyi atar
-        window.location.href = "profile.html?userId=" + userId;//aldığı idyi kullanır
-    });
+            $("#welcome").text("Hoş geldin, " + username);
+            $("#sidebarUsername").text(username);
 
-    // Arama kutusu
-    $("#userSearch").on("input", function () {//kullanıcı inputa her harf yazdığında çalışır
+            const firstLetter = username //kullanıcı adı merve
+                ?
+                username.charAt(0).toUpperCase() //ilk harfini alıyor
+                :
+                "M"; //username gelmezse m koy
 
-        const query = $(this).val().trim();//input içindeki yazıyı alır.this=input,val=içindeki yazı,trim=boşlukarı sil.
+            $("#sidebarAvatarLetter").text(firstLetter); //profil ikonuna harfi koyuyor
+            $("#composerAvatarLetter").text(firstLetter); //post yazdığımız yerdeki avatar harfi
 
-        if (query.length < 2) {//tek harfle arama, gereksiz api çağırımını engellemek
-            $("#searchResults").empty();//sonucu temizle işlemi durdur
-            return;
-        }
+            $("#content").on("input", function() {
+                const length = $(this).val().length;
+                $("#characterCount").text(length + " / 200");
+            });
 
-        $.ajax({//burda backende istek atıyoruz
-            url: "http://localhost:8080/users/search?username=" + query,//usercontroller>search e gider backendde,query=merve mesela
-            method: "GET",
-            headers: {
-                Authorization: "Bearer " + token
-            },
+            $("#logoutButton").click(function() {
+                localStorage.removeItem("token"); // çıkış yapınca siliyor
+                localStorage.removeItem("userId");
+                localStorage.removeItem("username");
 
-            success: function (users) {
+                window.location.href = "login.html"; // token olmadığı için tekrar giriş yapman lazım
+            });
+            // Timeline'daki bir posta tıklayınca detay sayfasına git
+            $("#timeline").on("click", ".post", function(e) {
 
-                $("#searchResults").empty();//eski arama silinir
-
-                if (users.length === 0) {//liste boşsa
-                    $("#searchResults").append("<p>Kullanıcı bulunamadı</p>");
+                // butonlara (beğeni, yorum) basıldıysa yönlendirme yapma
+                if ($(e.target).closest("button").length) {
                     return;
                 }
 
-                const currentUserId = localStorage.getItem("userId");//kendi user id m anlamadım bunu
+                const postId = $(this).data("post-id");
+                window.location.href = "post.html?postId=" + postId;
+            });
 
-                for (const user of users) {//gelen kullanıcıları tek tek gezer
-                    const isFollowed = user.followedByCurrentUser;//bunu takip ediyor musun
-//ekrana yeni kullanıcı ekler,data user id tıklayınca id alırız
-                    $("#searchResults").append(`
+            // Beğeni/yorum butonlarına basınca üstteki yönlendirmeyi tetikleme
+            $("#timeline").on("click", ".like-button, .comment-button", function(e) {
+                e.stopPropagation();
+            });
+            $("#createPostButton").click(function() { //butona basınca çalışır
+
+                const content = $("#content").val().trim(); //textarea’daki yazıyı alır
+
+                if (content === "") {
+                    alert("Gönderi boş olamaz.");
+                    return;
+                }
+
+                $.ajax({
+                    url: "http://localhost:8080/posts",
+                    method: "POST", //backende gidiyor postcontroller>createpost
+                    headers: {
+                        Authorization: "Bearer " + token //jwt gönderiyoruz
+                    },
+                    contentType: "application/json",
+                    data: JSON.stringify({ content: content }), //backende giden veri json formatında
+
+                    success: function() {
+                        $("#content").val("");
+                        $("#characterCount").text("0 / 200");
+                        loadTimeline(); //timeline yenilenir
+                    },
+
+                    error: function(xhr) { //xhr AJAX error objesi
+                        let message = "Gönderi paylaşılamadı.";
+
+                        if (xhr.responseJSON && xhr.responseJSON.message) { //sadece mesaj kısmını alıyoruz
+                            message = xhr.responseJSON.message;
+                        }
+
+                        alert(message);
+                    }
+                });
+            });
+
+            // Arama sonucundaki kullanıcı adına tıklayınca profile git
+            $("#searchResults").on("click", ".search-username", function() { //id si searchresults olanı seç, kullanıcı adına tıklanınca çalıştır
+                const userId = $(this).data("user-id"); //this tıklanan element,htmlden veri alır idyi atar
+                window.location.href = "profile.html?userId=" + userId; //aldığı idyi kullanır
+            });
+
+            // Arama kutusu
+            $("#userSearch").on("input", function() { //kullanıcı inputa her harf yazdığında çalışır
+
+                        const query = $(this).val().trim(); //input içindeki yazıyı alır.this=input,val=içindeki yazı,trim=boşlukarı sil.
+
+                        if (query.length < 2) { //tek harfle arama, gereksiz api çağırımını engellemek
+                            $("#searchResults").empty(); //sonucu temizle işlemi durdur
+                            return;
+                        }
+
+                        $.ajax({ //burda backende istek atıyoruz
+                                    url: "http://localhost:8080/users/search?username=" + query, //usercontroller>search e gider backendde,query=merve mesela
+                                    method: "GET",
+                                    headers: {
+                                        Authorization: "Bearer " + token
+                                    },
+
+                                    success: function(users) {
+
+                                            $("#searchResults").empty(); //eski arama silinir
+
+                                            if (users.length === 0) { //liste boşsa
+                                                $("#searchResults").append("<p>Kullanıcı bulunamadı</p>");
+                                                return;
+                                            }
+
+                                            const currentUserId = localStorage.getItem("userId"); //kendi user id m anlamadım bunu
+
+                                            for (const user of users) { //gelen kullanıcıları tek tek gezer
+                                                const isFollowed = user.followedByCurrentUser; //bunu takip ediyor musun
+                                                //ekrana yeni kullanıcı ekler,data user id tıklayınca id alırız
+                                                $("#searchResults").append(`
                         <div class="search-item">
 
                             <span class="search-username"

@@ -81,7 +81,7 @@ public class PostService {
 
     }
 
-    public List<PostResponse> getPostsByUserId(String userId) {//belirli kullanıcının attığı tweetleri listelemek için getPostsByUserId metodunu oluşturuyoruz
+    public List<PostResponse> getPostsByUserId(String userId, String currentUserId) {//belirli kullanıcının attığı tweetleri listelemek için getPostsByUserId metodunu oluşturuyoruz
         User user = getUserById(userId);
         List<Post> posts = postRepository.findByUserIdOrderByCreatedAtDesc(userId);
 
@@ -93,7 +93,7 @@ public class PostService {
                     convertToResponse(
                             post,
                             user.getUsername(),
-                            null
+                            currentUserId 
                     )
             );
         }
@@ -212,4 +212,11 @@ public class PostService {
 
         return responses;
     }
+    public PostResponse getPostByIdForResponse(String postId, String currentUserId) {
+
+    Post post = getPostById(postId);   // zaten var olan metot
+    User postUser = getUserById(post.getUserId());
+
+    return convertToResponse(post, postUser.getUsername(), currentUserId);
+}
 }

@@ -43,11 +43,20 @@ public class PostController {
     }
 
     @GetMapping("/user/{userId}")
-    public List<PostResponse> getPostsByUserId(@PathVariable String userId) {//@PathVariable ile url deki userId yi alıyoruz ve getPostsByUserId metoduna gönderiyoruz
+    public List<PostResponse> getPostsByUserId(@PathVariable String userId,Authentication authentication) {//@PathVariable ile url deki userId yi alıyoruz ve getPostsByUserId metoduna gönderiyoruz
 
-        return postService.getPostsByUserId(userId);
+        String currentUserId = authentication.getName();
+    return postService.getPostsByUserId(userId, currentUserId);
 
     }
+    @GetMapping("/{postId}")
+public PostResponse getPostById(
+        @PathVariable String postId,
+        Authentication authentication) {
+
+    String currentUserId = authentication.getName();
+    return postService.getPostByIdForResponse(postId, currentUserId);
+}
 
     @PostMapping("/{postId}/like")//postid urlden gelir,userid jwtden gelir
     public MessageResponse likePost(

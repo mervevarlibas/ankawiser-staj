@@ -30,7 +30,7 @@
                         <span>Ana Sayfa</span>
                     </a>
 
-                   <a href="#" id="profileLink" class="nav-item active">
+                    <a href="#" id="profileLink" class="nav-item active">
                         <span class="nav-icon">♡</span>
                         <span>Profil</span>
                     </a>
@@ -66,38 +66,41 @@
 
                 <div>
                     <p class="eyebrow">Profil</p>
-                    <h1 id="profileUsername">Kullanıcı</h1> <!-- bunu js değiştircek-->
+                    <h1 id="profileUsername">Kullanıcı</h1>
+                    <!-- bunu js değiştircek-->
                 </div>
 
             </header>
 
-<section class="profile-header">
+            <section class="profile-header">
 
-    <div class="profile-banner"></div>
+                <div class="profile-banner"></div>
 
-    <div class="profile-info">
+                <div class="profile-info">
 
-        <div class="profile-avatar">
-            <span id="profileAvatarLetter">M</span>
-        </div>
+                    <div class="profile-avatar">
+                        <span id="profileAvatarLetter">M</span>
+                    </div>
 
-        <div class="profile-text">
-            <h2 id="profileName">Kullanıcı</h2>
-            <p id="profileUsernameTag">@username</p>
+                    <div class="profile-text">
+                        <h2 id="profileName">Kullanıcı</h2>
+                        <p id="profileUsernameTag">@username</p>
 
-            <div class="profile-stats">
-                <span><strong id="followingCount">0</strong> Takip</span>
-                <span><strong id="followerCount">0</strong> Takipçi</span>
-            </div>
-        </div>
+                        <div class="profile-stats">
+                            <span><strong id="followingCount">0</strong> Takip</span>
+                            <span><strong id="followerCount">0</strong> Takipçi</span>
+                        </div>
+                    </div>
 
-        <button id="followButton" class="primary-button">
+                    <button id="followButton" class="primary-button">
             Takip Et
         </button>
+                    <button id="changePasswordButton" class="primary-button" style="display:none;">
+    Şifre Değiştir
+</button>
+                </div>
 
-    </div>
-
-</section>
+            </section>
 
             <section class="timeline-section">
 
@@ -105,7 +108,8 @@
                     <h2>Gönderiler</h2>
                 </div>
 
-                <div id="profilePosts" class="timeline-list"> <!-- backendden gelen postlar buraya basılacak -->
+                <div id="profilePosts" class="timeline-list">
+                    <!-- backendden gelen postlar buraya basılacak -->
 
                     <div class="loading-card">
                         Gönderiler yükleniyor...
@@ -149,17 +153,37 @@
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
     <script src="js/profile.js"></script>
 
-<div id="followListModal" class="modal-overlay" style="display:none;">
-    <div class="modal-box">
-        <div class="modal-header">
-            <h3 id="followListTitle">Liste</h3>
-            <button type="button" id="closeFollowListModal">&times;</button>
-        </div>
-        <div id="followListBody">
+    <div id="followListModal" class="modal-overlay" style="display:none;">
+        <div class="modal-box">
+            <div class="modal-header">
+                <h3 id="followListTitle">Liste</h3>
+                <button type="button" id="closeFollowListModal">&times;</button>
+            </div>
+            <div id="followListBody">
+            </div>
         </div>
     </div>
-</div>
 
+    <div id="changePasswordModal" class="modal-overlay" style="display:none;">
+        <div class="modal-box">
+            <div class="modal-header">
+                <h3>Şifre Değiştir</h3>
+                <button type="button" id="closeChangePasswordModal">&times;</button>
+            </div>
+
+            <label for="oldPassword">Eski şifre</label>
+            <input type="password" id="oldPassword" />
+
+            <label for="newPassword">Yeni şifre</label>
+            <input type="password" id="newPassword" />
+
+            <label for="confirmNewPassword">Yeni şifre (tekrar)</label>
+            <input type="password" id="confirmNewPassword" />
+
+            <button type="button" id="submitChangePassword">Kaydet</button>
+            <p id="changePasswordMessage"></p>
+        </div>
+    </div>
 </body>
 
 </html>

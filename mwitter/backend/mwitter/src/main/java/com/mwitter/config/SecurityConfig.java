@@ -43,7 +43,9 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth//hangi endpointlere kim girebilir
                 .requestMatchers(//token olmadan kullanılabilir çünkü kullanıcı o işlemleri yaparken token a sahip değil
                         "/users/register",
-                        "/users/login" //token isteme
+                        "/users/login", //token isteme
+                        "/users/verify-email",
+                        "/users/resend-verification-code"
                 ).permitAll()
                 .requestMatchers(//gönderileri ve profilleri görüntüleme şimdilik!!!!! herkese açık
                         HttpMethod.GET,

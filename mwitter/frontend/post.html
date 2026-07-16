@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="tr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Mwitter - Gönderi</title>
+
+    <link rel="stylesheet" href="css/style.css">
+</head>
+
+<body class="home-page">
+
+    <div class="home-layout">
+
+        <!-- SOL MENÜ (DİĞER SAYFALARLA AYNI) -->
+        <aside class="left-sidebar">
+
+            <div class="sidebar-inner">
+
+                <a href="index.html" class="sidebar-logo">
+                    Mwitter
+                </a>
+
+                <nav class="main-nav">
+
+                    <a href="index.html" class="nav-item">
+                        <span class="nav-icon">⌂</span>
+                        <span>Ana Sayfa</span>
+                    </a>
+
+                    <a href="#" id="profileLink" class="nav-item">
+                        <span class="nav-icon">♡</span>
+                        <span>Profil</span>
+                    </a>
+
+                    <button type="button" class="nav-item nav-button" id="logoutButton">
+                        <span class="nav-icon">↪</span>
+                        <span>Çıkış Yap</span>
+                    </button>
+
+                </nav>
+
+                <div class="sidebar-user-card">
+
+                    <div class="avatar">
+                        <span id="sidebarAvatarLetter">M</span>
+                    </div>
+
+                    <div class="sidebar-user-info">
+                        <strong id="sidebarUsername">Kullanıcı</strong>
+                        <small>Mwitter hesabı</small>
+                    </div>
+
+                </div>
+
+            </div>
+
+        </aside>
+
+        <!-- ORTA ALAN -->
+        <main class="feed-column">
+
+            <header class="feed-header">
+                <div>
+                    <p class="eyebrow">Gönderi</p>
+                    <h1>Gönderi Detayı</h1>
+                </div>
+            </header>
+
+            <section class="timeline-section">
+                <div id="postDetail" class="timeline-list">
+                    <div class="loading-card">
+                        Gönderi yükleniyor...
+                    </div>
+                </div>
+            </section>
+
+        </main>
+
+        <!-- SAĞ PANEL -->
+        <aside class="right-sidebar">
+
+            <div class="right-panel">
+
+                <section class="suggestion-card">
+                    <div class="section-title-row">
+                        <h2>Gönderi</h2>
+                    </div>
+                    <p>Tek bir gönderiyi görüntülüyorsun.</p>
+                </section>
+
+                <footer class="home-footer">
+                    <span>Mwitter</span>
+                    <span>·</span>
+                    <span>2026</span>
+                </footer>
+
+            </div>
+
+        </aside>
+
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="js/post.js"></script>
+
+</body>
+
+</html>

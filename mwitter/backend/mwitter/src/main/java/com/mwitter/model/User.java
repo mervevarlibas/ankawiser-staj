@@ -1,5 +1,6 @@
 package com.mwitter.model;//dosyanın hangi klasöre ait olduğunu belirtiyoruz 
 //Spring Boot @SpringBootApplication sayesinde com.mwitter paketini tararken bu sınıfı da bulur.
+
 import java.time.LocalDateTime;//saati ve tarihi birlikte tutar
 import java.util.ArrayList;
 import java.util.List;
@@ -29,4 +30,8 @@ public class User {
     private List<String> following = new ArrayList<>();
     private List<String> followers = new ArrayList<>();
 
+    private boolean verified = false; //hesap doğrulandı mı. kullanıcı mail kodu doğru girene kadar false kalacak
+    private String verificationCode; //kullanıcıya mailde gönderilen kod
+
+    private LocalDateTime verificationCodeExpiry;//doğrulama kodunun süresi
 }
