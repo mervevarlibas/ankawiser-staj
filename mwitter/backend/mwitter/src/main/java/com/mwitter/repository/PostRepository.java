@@ -8,9 +8,9 @@ import com.mwitter.model.Post;
 
 public interface PostRepository extends MongoRepository<Post, String> {
 
-    List<Post> findAllByOrderByCreatedAtDesc();//tüm postları oluşturulma tarihine göre azalan sırada listelemek 
+    List<Post> findAllByOrderByCreatedAtDesc();//tüm postları oluşturulma tarihine göre yeniden eskiye sırada listelemek.
 
-    List<Post> findByUserIdOrderByCreatedAtDesc(String userId);
+    List<Post> findByUserIdOrderByCreatedAtDesc(String userId);//bu uygulamanın profil sayfasında kronolojik sıralama için
 
-    List<Post> findByUserIdInOrderByCreatedAtDesc(List<String> userIds);
+    List<Post> findByUserIdInOrderByCreatedAtDesc(List<String> userIds);//timeline
 }

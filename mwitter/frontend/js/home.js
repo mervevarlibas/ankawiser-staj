@@ -45,7 +45,7 @@ $(document).ready(function() { //sayfa tamamen yüklendiğinde bu kod çalışs�
             });
 
             // Beğeni/yorum butonlarına basınca üstteki yönlendirmeyi tetikleme
-            $("#timeline").on("click", ".like-button, .comment-button", function(e) {
+            $("#timeline").on("click", ".like-button, .repost-button, .comment-button", function(e) {
                 e.stopPropagation();
             });
             $("#createPostButton").click(function() { //butona basınca çalışır
@@ -210,6 +210,60 @@ $(document).ready(function() { //sayfa tamamen yüklendiğinde bu kod çalışs�
         });
     });
 
+    $("#timeline").on("click", ".repost-button", function () {
+        const button = $(this);
+        const postId = button.data("post-id");
+        const isReposted = String(button.attr("data-reposted")) === "true";
+        const endpoint = isReposted ? "/unrepost" : "/repost";
+
+        $.ajax({
+            url: "http://localhost:8080/posts/" + postId + endpoint,
+            method: "POST",
+            headers: { Authorization: "Bearer " + token },
+            success: function () {
+                loadTimeline();
+            },
+            error: function (xhr) {
+                let message = "Repost işlemi yapılamadı.";
+                if (xhr.responseJSON && xhr.responseJSON.message) {
+                    message = xhr.responseJSON.message;
+                }
+                alert(message);
+            }
+        });
+    });
+
+    $("#timeline").on("click", ".delete-post-button", function () {
+        const postId = $(this).data("post-id");
+        if (!confirm("Bu gönderiyi silmek istediğine emin misin?")) return;
+
+        $.ajax({
+            url: "http://localhost:8080/posts/" + postId,
+            method: "DELETE",
+            headers: { Authorization: "Bearer " + token },
+            success: function () { loadTimeline(); },
+            error: function (xhr) {
+                alert(xhr.responseJSON?.message || "Gönderi silinemedi.");
+            }
+        });
+    });
+
+    $("#timeline").on("click", ".delete-comment-button", function () {
+        const postId = $(this).data("post-id");
+        const commentId = $(this).data("comment-id");
+        if (!confirm("Bu yorumu silmek istediğine emin misin?")) return;
+
+        $.ajax({
+            url: "http://localhost:8080/posts/" + postId + "/comments/" + commentId,
+            method: "DELETE",
+            headers: { Authorization: "Bearer " + token },
+            success: function () { loadComments(postId); },
+            error: function (xhr) {
+                alert(xhr.responseJSON?.message || "Yorum silinemedi.");
+            }
+        });
+    });
+
     $("#timeline").on("click", ".post-username", function () {//timeline içindeki post username tıklanınca çalış
 
         const userId = $(this).data("user-id");//tıklanan kullanıcının idsini al
@@ -302,6 +356,7 @@ $(document).ready(function() { //sayfa tamamen yüklendiğinde bu kod çalışs�
 function loadTimeline() {//timeline i yükleyen fonksiyon
 
     const token = localStorage.getItem("token");//backende kim olduğunu söylemek için
+    const currentUserId = localStorage.getItem("userId");
 
     $.ajax({//GET /posts/timeline backend postcontroller>gettimeline
         url: "http://localhost:8080/posts/timeline",
@@ -330,6 +385,10 @@ function loadTimeline() {//timeline i yükleyen fonksiyon
 //postu ekrana basar
                 $("#timeline").append(`
                     <article class="post" data-post-id="${post.id}">
+
+                        ${post.repost ? `
+                            <div class="repost-label">↻ ${post.repostedByUsername} repostladı</div>
+                        ` : ""}
 
                         <div class="post-header">
 
@@ -371,12 +430,31 @@ function loadTimeline() {//timeline i yükleyen fonksiyon
 
                             <button
                                 type="button"
+                                class="post-action repost-button ${post.repostedByCurrentUser ? "reposted" : ""}"
+                                data-post-id="${post.id}"
+                                data-reposted="${post.repostedByCurrentUser}"
+                                aria-label="${post.repostedByCurrentUser ? "Repostu geri al" : "Repostla"}"
+                            >
+                                <span class="repost-icon">↻</span>
+                                <span>${post.repostCount}</span>
+                            </button>
+
+                            <button
+                                type="button"
                                 class="post-action comment-button"
                                 data-post-id="${post.id}"
                             >
                                 💬
                                 <span>Yorumlar</span>
                             </button>
+
+                            ${post.userId === currentUserId ? `
+                                <button
+                                    type="button"
+                                    class="post-action delete-post-button"
+                                    data-post-id="${post.id}"
+                                >Sil</button>
+                            ` : ""}
 
                         </div>
 
@@ -406,6 +484,7 @@ function loadTimeline() {//timeline i yükleyen fonksiyon
 function loadComments(postId) {//seçilen postun yorumlarını getirir
 
     const token = localStorage.getItem("token");
+    const currentUserId = localStorage.getItem("userId");
     const commentsArea = $("#comments-" + postId);//doğru postun yorum alanını bulur
 
     $.ajax({
@@ -432,6 +511,12 @@ function loadComments(postId) {//seçilen postun yorumlarını getirir
                         <div class="comment-item">
                             <strong>${comment.username}</strong>
                             <span class="comment-date">${formattedDate}</span>
+                            ${comment.userId === currentUserId ? `
+                                <button type="button"
+                                    class="delete-comment-button"
+                                    data-post-id="${postId}"
+                                    data-comment-id="${comment.id}">Sil</button>
+                            ` : ""}
                             <p>${comment.content}</p>
                         </div>
                     `);

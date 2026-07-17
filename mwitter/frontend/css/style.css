@@ -1,4 +1,8 @@
 :root {
+    --bg-color: #ffffff;
+    --text-color: #14171a;
+    --card-bg: #f5f8fa;
+    --border-color: #e1e8ed;
     --pink-background: #fff7fa;
     --pink-light: #fbe5ec;
     --pink-soft: #f6d5df;
@@ -9,6 +13,21 @@
     --text-soft: #826873;
     --white: #ffffff;
     --shadow: 0 18px 50px rgba(126, 41, 73, 0.13);
+}
+
+body.dark-mode {
+    --bg-color: #15202b;
+    --text-color: #e7e9ea;
+    --card-bg: #1e2732;
+    --border-color: #38444d;
+    --pink-background: #15202b;
+    --pink-light: #263340;
+    --pink-soft: #2f3e4c;
+    --pink-border: #38444d;
+    --text-main: #e7e9ea;
+    --text-soft: #aab8c2;
+    --white: #1e2732;
+    --shadow: 0 18px 50px rgba(0, 0, 0, 0.28);
 }
 
 * {
@@ -24,7 +43,75 @@ body {
     margin: 0;
     font-family: "Segoe UI", Arial, sans-serif;
     color: var(--text-main);
+    background-color: var(--bg-color);
+    transition: background-color 0.25s ease, color 0.25s ease;
 }
+
+.theme-toggle {
+    position: fixed;
+    top: 16px;
+    right: 16px;
+    z-index: 1000;
+    min-width: 112px;
+    min-height: 42px;
+    padding: 9px 14px;
+    border: 1px solid var(--border-color);
+    border-radius: 999px;
+    background: var(--card-bg);
+    color: var(--text-color);
+    font: 600 14px/1.2 "Segoe UI", Arial, sans-serif;
+    cursor: pointer;
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.14);
+    transition: background-color 0.2s ease, color 0.2s ease,
+        border-color 0.2s ease, transform 0.2s ease;
+}
+
+.theme-toggle:hover { transform: translateY(-1px); }
+
+.theme-toggle:focus-visible {
+    outline: 3px solid var(--rose-main);
+    outline-offset: 2px;
+}
+
+body.dark-mode.auth-page,
+body.dark-mode.home-page { background: var(--bg-color); }
+
+body.dark-mode .auth-card,
+body.dark-mode .left-sidebar,
+body.dark-mode .feed-column,
+body.dark-mode .feed-header,
+body.dark-mode .composer-card,
+body.dark-mode .post,
+body.dark-mode .right-sidebar,
+body.dark-mode .search-card,
+body.dark-mode .suggestion-card,
+body.dark-mode .sidebar-user-card,
+body.dark-mode .loading-card,
+body.dark-mode .empty-card,
+body.dark-mode .modal-box {
+    background: var(--card-bg);
+    border-color: var(--border-color);
+}
+
+body.dark-mode .auth-form input,
+body.dark-mode .composer-content textarea,
+body.dark-mode .search-input-wrap,
+body.dark-mode .modal-box input {
+    background: var(--bg-color);
+    color: var(--text-color);
+    border-color: var(--border-color);
+}
+
+body.dark-mode .post:hover,
+body.dark-mode .composer-content textarea:focus { background: #263340; }
+
+body.dark-mode .home-layout,
+body.dark-mode .post,
+body.dark-mode .profile-header { border-color: var(--border-color); }
+
+body.dark-mode input::placeholder,
+body.dark-mode textarea::placeholder { color: #8899a6; }
+
 
 /* LOGIN VE REGISTER SAYFASI */
 
@@ -33,65 +120,45 @@ body {
     min-height: 100vh;
     overflow-x: hidden;
     overflow-y: auto;
-
-    background:
-        radial-gradient(
-            circle at center,
-            #ffffff 0%,
-            var(--pink-background) 55%,
-            var(--pink-light) 100%
-        );
+    background: radial-gradient( circle at center, #ffffff 0%, var(--pink-background) 55%, var(--pink-light) 100%);
 }
 
 .auth-container {
     position: relative;
     z-index: 5;
-
     min-height: 100vh;
-
     display: flex;
     align-items: center;
     justify-content: center;
-
     padding: 36px 20px;
 }
 
 .auth-card {
     width: min(430px, 100%);
     padding: 48px 42px;
-
     background: rgba(255, 255, 255, 0.88);
     border: 1px solid rgba(236, 195, 207, 0.9);
     border-radius: 28px;
-
     box-shadow: var(--shadow);
     backdrop-filter: blur(12px);
-
     animation: cardAppear 0.9s ease both;
 }
 
 .brand-logo {
     margin: 0;
-
     text-align: center;
-
     font-family: "Brush Script MT", "Segoe Script", cursive;
     font-size: 64px;
     font-style: italic;
     font-weight: 700;
     letter-spacing: 1px;
-
     color: var(--rose-dark);
-
-    text-shadow:
-        0 4px 12px rgba(166, 61, 98, 0.18);
+    text-shadow: 0 4px 12px rgba(166, 61, 98, 0.18);
 }
 
 .auth-subtitle {
     margin: 6px 0 34px;
-
     text-align: center;
-
     color: var(--text-soft);
     font-size: 15px;
 }
@@ -104,77 +171,47 @@ body {
 
 .auth-form label {
     margin-top: 7px;
-
     font-size: 14px;
     font-weight: 600;
-
     color: var(--rose-dark);
 }
 
 .auth-form input {
     width: 100%;
     height: 50px;
-
     padding: 0 16px;
-
     border: 1px solid var(--pink-border);
     border-radius: 15px;
     outline: none;
-
     background: rgba(255, 250, 252, 0.95);
     color: var(--text-main);
-
     font-size: 15px;
-
-    transition:
-        border-color 0.2s ease,
-        box-shadow 0.2s ease,
-        transform 0.2s ease;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
 }
 
 .auth-form input:focus {
     border-color: var(--rose-main);
-
-    box-shadow:
-        0 0 0 4px rgba(166, 61, 98, 0.1);
-
+    box-shadow: 0 0 0 4px rgba(166, 61, 98, 0.1);
     transform: translateY(-1px);
 }
 
 .primary-button {
     height: 50px;
     margin-top: 18px;
-
     border: none;
     border-radius: 16px;
-
-    background:
-        linear-gradient(
-            135deg,
-            var(--rose-main),
-            var(--rose-dark)
-        );
-
+    background: linear-gradient( 135deg, var(--rose-main), var(--rose-dark));
     color: var(--white);
-
     font-size: 16px;
     font-weight: 700;
-
     cursor: pointer;
-
-    box-shadow:
-        0 10px 24px rgba(126, 41, 73, 0.22);
-
-    transition:
-        transform 0.2s ease,
-        box-shadow 0.2s ease;
+    box-shadow: 0 10px 24px rgba(126, 41, 73, 0.22);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
 .primary-button:hover {
     transform: translateY(-2px);
-
-    box-shadow:
-        0 14px 30px rgba(126, 41, 73, 0.28);
+    box-shadow: 0 14px 30px rgba(126, 41, 73, 0.28);
 }
 
 .primary-button:active {
@@ -184,25 +221,20 @@ body {
 .form-message {
     min-height: 22px;
     margin: 16px 0 0;
-
     text-align: center;
-
     color: #b42348;
     font-size: 14px;
 }
 
 .auth-switch {
     margin: 18px 0 0;
-
     text-align: center;
-
     color: var(--text-soft);
     font-size: 14px;
 }
 
 .auth-switch a {
     color: var(--rose-main);
-
     font-weight: 700;
     text-decoration: none;
 }
@@ -219,17 +251,13 @@ body {
     color: #b42348;
 }
 
+
 /* REGISTER KARTI */
 
 .register-card {
     width: min(430px, 100%);
-
     margin: 18px auto;
-
-    padding:
-        26px
-        38px
-        30px;
+    padding: 26px 38px 30px;
 }
 
 .register-card .brand-logo {
@@ -279,7 +307,9 @@ body {
     overflow: visible;
 }
 
+
 /* Ana dal: önce görünmez, sonra köşeden merkeze doğru uzar */
+
 .floral-corner::before {
     content: "";
     position: absolute;
@@ -296,7 +326,9 @@ body {
     will-change: transform, opacity;
 }
 
+
 /* Ana daldan çıkan küçük yan dal */
+
 .floral-corner::after {
     content: "";
     position: absolute;
@@ -371,6 +403,7 @@ body {
     transform: scale(-1);
 }
 
+
 /* ANİMASYONLAR */
 
 @keyframes cardAppear {
@@ -378,7 +411,6 @@ body {
         opacity: 0;
         transform: translateY(22px) scale(0.98);
     }
-
     to {
         opacity: 1;
         transform: translateY(0) scale(1);
@@ -390,7 +422,6 @@ body {
         opacity: 0;
         transform: rotate(35deg) scaleX(0);
     }
-
     to {
         opacity: 1;
         transform: rotate(35deg) scaleX(1);
@@ -402,7 +433,6 @@ body {
         opacity: 0;
         transform: rotate(-28deg) scaleX(0);
     }
-
     to {
         opacity: 1;
         transform: rotate(-28deg) scaleX(1);
@@ -414,12 +444,10 @@ body {
         opacity: 0;
         transform: scale(0) rotate(-25deg);
     }
-
     68% {
         opacity: 1;
         transform: scale(1.2) rotate(6deg);
     }
-
     100% {
         opacity: 1;
         transform: scale(1) rotate(0);
@@ -431,12 +459,12 @@ body {
         opacity: 0;
         transform: scale(0) rotate(-35deg);
     }
-
     to {
         opacity: 1;
         transform: scale(1) rotate(22deg);
     }
 }
+
 
 /* KISA EKRANLARDA AŞAĞI KAYDIRMA */
 
@@ -446,11 +474,11 @@ body {
         padding-top: 24px;
         padding-bottom: 40px;
     }
-
     .auth-card {
         margin: 0 auto;
     }
 }
+
 
 /* TELEFON VE DAR EKRANLAR */
 
@@ -458,72 +486,58 @@ body {
     .auth-container {
         padding: 24px 15px 38px;
     }
-
     .auth-card {
         padding: 34px 23px;
         border-radius: 22px;
     }
-
     .brand-logo {
         font-size: 52px;
     }
-
     .register-card {
         padding: 25px 22px 28px;
     }
-
     .floral-corner {
         width: 250px;
         height: 250px;
         transform-origin: center;
     }
-
     .floral-corner::before {
         width: 195px;
         height: 130px;
     }
-
     .floral-corner::after {
         width: 90px;
         height: 62px;
     }
-
     .flower-one {
         font-size: 42px;
     }
-
     .flower-two {
         font-size: 29px;
     }
-
     .leaf-one {
         font-size: 36px;
     }
 }
 
+
 /* ANA SAYFA */
 
 .home-page {
     min-height: 100vh;
-    background:
-        linear-gradient(
-            180deg,
-            #fffafd 0%,
-            #fff4f8 100%
-        );
+    background: linear-gradient( 180deg, #fffafd 0%, #fff4f8 100%);
 }
 
 .home-layout {
     width: min(1320px, 100%);
     min-height: 100vh;
     margin: 0 auto;
-
     display: grid;
     grid-template-columns: 260px minmax(0, 680px) 320px;
-
     border-left: 1px solid rgba(236, 195, 207, 0.55);
     border-right: 1px solid rgba(236, 195, 207, 0.55);
 }
+
 
 /* SOL MENÜ */
 
@@ -535,25 +549,19 @@ body {
 .sidebar-inner {
     position: sticky;
     top: 0;
-
     min-height: 100vh;
-
     display: flex;
     flex-direction: column;
-
     padding: 28px 24px;
 }
 
 .sidebar-logo {
     display: inline-block;
-
     margin: 0 0 38px;
-
     font-family: "Brush Script MT", "Segoe Script", cursive;
     font-size: 48px;
     font-style: italic;
     font-weight: 700;
-
     color: var(--rose-dark);
     text-decoration: none;
 }
@@ -566,30 +574,20 @@ body {
 
 .nav-item {
     min-height: 52px;
-
     display: flex;
     align-items: center;
     gap: 15px;
-
     padding: 0 16px;
-
     border: none;
     border-radius: 18px;
-
     background: transparent;
     color: var(--text-main);
-
     font-size: 17px;
     font-weight: 600;
     text-decoration: none;
     text-align: left;
-
     cursor: pointer;
-
-    transition:
-        background 0.2s ease,
-        color 0.2s ease,
-        transform 0.2s ease;
+    transition: background 0.2s ease, color 0.2s ease, transform 0.2s ease;
 }
 
 .nav-item:hover {
@@ -610,48 +608,32 @@ body {
 
 .nav-icon {
     width: 25px;
-
     display: inline-flex;
     justify-content: center;
-
     color: var(--rose-main);
     font-size: 24px;
 }
 
 .sidebar-user-card {
     margin-top: auto;
-
     display: flex;
     align-items: center;
     gap: 12px;
-
     padding: 14px;
-
     border: 1px solid var(--pink-border);
     border-radius: 19px;
-
     background: rgba(255, 255, 255, 0.74);
 }
 
 .avatar {
     width: 44px;
     height: 44px;
-
     flex: 0 0 auto;
-
     display: grid;
     place-items: center;
-
     border: 1px solid rgba(166, 61, 98, 0.22);
     border-radius: 50%;
-
-    background:
-        linear-gradient(
-            135deg,
-            #f8cfdb,
-            #e8a9bd
-        );
-
+    background: linear-gradient( 135deg, #f8cfdb, #e8a9bd);
     color: var(--rose-dark);
     font-weight: 800;
     text-transform: uppercase;
@@ -659,32 +641,28 @@ body {
 
 .sidebar-user-info {
     min-width: 0;
-
     display: flex;
     flex-direction: column;
 }
 
 .sidebar-user-info strong {
     overflow: hidden;
-
     color: var(--text-main);
-
     text-overflow: ellipsis;
     white-space: nowrap;
 }
 
 .sidebar-user-info small {
     margin-top: 2px;
-
     color: var(--text-soft);
     font-size: 12px;
 }
+
 
 /* ORTA SÜTUN */
 
 .feed-column {
     min-width: 0;
-
     background: rgba(255, 255, 255, 0.66);
 }
 
@@ -692,34 +670,26 @@ body {
     position: sticky;
     top: 0;
     z-index: 10;
-
     min-height: 92px;
-
     display: flex;
     align-items: center;
     justify-content: space-between;
     gap: 16px;
-
     padding: 18px 24px;
-
     border-bottom: 1px solid var(--pink-border);
-
     background: rgba(255, 250, 252, 0.9);
     backdrop-filter: blur(14px);
 }
 
 .feed-header h1 {
     margin: 1px 0 0;
-
     color: var(--text-main);
     font-size: 25px;
 }
 
 .eyebrow {
     margin: 0;
-
     color: var(--rose-main);
-
     font-size: 12px;
     font-weight: 800;
     letter-spacing: 0.08em;
@@ -728,25 +698,21 @@ body {
 
 .welcome-badge {
     padding: 9px 13px;
-
     border: 1px solid var(--pink-border);
     border-radius: 999px;
-
     background: var(--white);
     color: var(--rose-dark);
-
     font-size: 13px;
     font-weight: 700;
 }
+
 
 /* POST PAYLAŞMA KARTI */
 
 .composer-card {
     display: flex;
     gap: 14px;
-
     padding: 22px 24px;
-
     border-bottom: 1px solid var(--pink-border);
     background: rgba(255, 255, 255, 0.82);
 }
@@ -763,41 +729,29 @@ body {
 .composer-content textarea {
     width: 100%;
     min-height: 105px;
-
     resize: vertical;
-
     padding: 13px 15px;
-
     border: 1px solid transparent;
     border-radius: 18px;
     outline: none;
-
     background: #fff7fa;
     color: var(--text-main);
-
     font-family: inherit;
     font-size: 17px;
     line-height: 1.5;
-
-    transition:
-        border-color 0.2s ease,
-        box-shadow 0.2s ease,
-        background 0.2s ease;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
 }
 
 .composer-content textarea:focus {
     border-color: var(--pink-border);
     background: var(--white);
-
-    box-shadow:
-        0 0 0 4px rgba(166, 61, 98, 0.08);
+    box-shadow: 0 0 0 4px rgba(166, 61, 98, 0.08);
 }
 
 .composer-footer {
     display: flex;
     align-items: center;
     justify-content: space-between;
-
     margin-top: 11px;
 }
 
@@ -810,12 +764,11 @@ body {
     width: auto;
     min-width: 112px;
     height: 43px;
-
     margin: 0;
     padding: 0 22px;
-
     border-radius: 999px;
 }
+
 
 /* TIMELINE */
 
@@ -830,25 +783,21 @@ body {
     gap: 16px;
 }
 
-.timeline-section > .section-title-row {
+.timeline-section>.section-title-row {
     padding: 18px 24px 12px;
 }
 
 .section-title-row h2 {
     margin: 0;
-
     color: var(--text-main);
     font-size: 18px;
 }
 
 .soft-label {
     padding: 6px 10px;
-
     border-radius: 999px;
-
     background: var(--pink-light);
     color: var(--rose-dark);
-
     font-size: 12px;
     font-weight: 700;
 }
@@ -862,28 +811,21 @@ body {
 .empty-card {
     margin: 12px 24px 24px;
     padding: 28px;
-
     border: 1px dashed var(--pink-border);
     border-radius: 20px;
-
     background: rgba(255, 255, 255, 0.66);
     color: var(--text-soft);
-
     text-align: center;
 }
+
 
 /* JAVASCRIPT TARAFINDAN EKLENEN POSTLAR */
 
 .post {
     padding: 20px 24px;
-
     border-top: 1px solid rgba(236, 195, 207, 0.72);
-
     background: rgba(255, 255, 255, 0.73);
-
-    transition:
-        background 0.2s ease,
-        transform 0.2s ease;
+    transition: background 0.2s ease, transform 0.2s ease;
 }
 
 .post:hover {
@@ -892,16 +834,13 @@ body {
 
 .post h3 {
     margin: 0 0 8px;
-
     color: var(--rose-dark);
     font-size: 16px;
 }
 
 .post p {
     margin: 0 0 12px;
-
     color: var(--text-main);
-
     font-size: 16px;
     line-height: 1.55;
 }
@@ -915,61 +854,48 @@ body {
     display: none;
 }
 
+
 /* SAĞ PANEL */
 
 .right-sidebar {
     border-left: 1px solid var(--pink-border);
-
     background: rgba(255, 250, 252, 0.75);
 }
 
 .right-panel {
     position: sticky;
     top: 0;
-
     display: flex;
     flex-direction: column;
     gap: 18px;
-
     padding: 24px 20px;
 }
 
 .search-card,
 .suggestion-card {
     padding: 20px;
-
     border: 1px solid var(--pink-border);
     border-radius: 22px;
-
     background: rgba(255, 255, 255, 0.78);
-
-    box-shadow:
-        0 12px 30px rgba(126, 41, 73, 0.07);
+    box-shadow: 0 12px 30px rgba(126, 41, 73, 0.07);
 }
 
 .search-card label {
     display: block;
-
     margin-bottom: 11px;
-
     color: var(--rose-dark);
-
     font-size: 15px;
     font-weight: 800;
 }
 
 .search-input-wrap {
     height: 46px;
-
     display: flex;
     align-items: center;
     gap: 10px;
-
     padding: 0 14px;
-
     border: 1px solid var(--pink-border);
     border-radius: 999px;
-
     background: #fff7fa;
 }
 
@@ -980,13 +906,10 @@ body {
 
 .search-input-wrap input {
     width: 100%;
-
     border: none;
     outline: none;
-
     background: transparent;
     color: var(--text-main);
-
     font-size: 14px;
 }
 
@@ -994,15 +917,12 @@ body {
     display: flex;
     flex-direction: column;
     gap: 9px;
-
     margin-top: 13px;
 }
 
 .suggestion-card p {
     margin: 13px 0 17px;
-
     color: var(--text-soft);
-
     font-size: 14px;
     line-height: 1.55;
 }
@@ -1011,7 +931,6 @@ body {
     display: flex;
     justify-content: center;
     gap: 17px;
-
     color: var(--rose-main);
     font-size: 23px;
 }
@@ -1020,10 +939,10 @@ body {
     display: flex;
     justify-content: center;
     gap: 8px;
-
     color: var(--text-soft);
     font-size: 12px;
 }
+
 
 /* ANA SAYFA RESPONSIVE */
 
@@ -1031,7 +950,6 @@ body {
     .home-layout {
         grid-template-columns: 220px minmax(0, 1fr);
     }
-
     .right-sidebar {
         display: none;
     }
@@ -1041,80 +959,64 @@ body {
     .home-layout {
         display: block;
     }
-
     .left-sidebar {
         position: fixed;
         right: 0;
         bottom: 0;
         left: 0;
         z-index: 30;
-
         border-top: 1px solid var(--pink-border);
         border-right: none;
     }
-
     .sidebar-inner {
         min-height: auto;
-
         padding: 8px 12px;
     }
-
     .sidebar-logo,
     .sidebar-user-card {
         display: none;
     }
-
     .main-nav {
         flex-direction: row;
         justify-content: space-around;
         gap: 5px;
     }
-
     .nav-item {
         width: auto;
         min-height: 48px;
-
         flex-direction: column;
         gap: 2px;
-
         padding: 5px 12px;
-
         font-size: 11px;
     }
-
     .nav-icon {
         font-size: 21px;
     }
-
     .feed-column {
         padding-bottom: 72px;
     }
-
     .feed-header,
     .composer-card,
     .post {
         padding-right: 16px;
         padding-left: 16px;
     }
-
     .welcome-badge {
         display: none;
     }
-
     .composer-card {
         gap: 10px;
     }
-
     .composer-avatar {
         width: 38px;
         height: 38px;
     }
-
     .composer-content textarea {
         min-height: 90px;
         font-size: 15px;
     }
 }
+
 .post-header {
     display: flex;
     align-items: center;
@@ -1135,16 +1037,12 @@ body {
 .post-username {
     width: fit-content;
     padding: 0;
-
     border: none;
     background: transparent;
-
     color: var(--rose-dark);
-
     font-family: inherit;
     font-size: 16px;
     font-weight: 800;
-
     cursor: pointer;
 }
 
@@ -1160,7 +1058,6 @@ body {
     display: flex;
     align-items: center;
     gap: 18px;
-
     padding-top: 10px;
 }
 
@@ -1168,24 +1065,15 @@ body {
     display: inline-flex;
     align-items: center;
     gap: 7px;
-
     padding: 7px 11px;
-
     border: none;
     border-radius: 999px;
-
     background: transparent;
     color: var(--text-soft);
-
     font-family: inherit;
     font-size: 14px;
-
     cursor: pointer;
-
-    transition:
-        background 0.2s ease,
-        color 0.2s ease,
-        transform 0.2s ease;
+    transition: background 0.2s ease, color 0.2s ease, transform 0.2s ease;
 }
 
 .post-action:hover {
@@ -1197,6 +1085,7 @@ body {
 .comments-area {
     margin-top: 12px;
 }
+
 
 /* BEĞENİ BUTONU */
 
@@ -1214,6 +1103,270 @@ body {
     display: inline-block;
     transition: transform 0.2s ease, color 0.2s ease;
 }
+
+.repost-label {
+    margin: 0 0 10px 54px;
+    color: var(--text-soft);
+    font-size: 13px;
+    font-weight: 700;
+}
+
+.repost-button.reposted {
+    background: var(--pink-light);
+    color: #168a5b;
+}
+
+.repost-icon {
+    display: inline-block;
+    font-size: 18px;
+    transition: transform 0.2s ease;
+}
+
+.repost-button:hover .repost-icon,
+.repost-button.reposted .repost-icon {
+    transform: rotate(20deg);
+}
+
+.delete-post-button,
+.delete-comment-button {
+    color: #b42348;
+}
+
+.delete-post-button:hover,
+.delete-comment-button:hover {
+    background: rgba(180, 35, 72, 0.1);
+    color: #d62f58;
+}
+
+.delete-comment-button {
+    margin-left: 8px;
+    padding: 3px 7px;
+    border: none;
+    border-radius: 7px;
+    background: transparent;
+    font: inherit;
+    font-size: 12px;
+    cursor: pointer;
+}
+
+/* MESAJLAR */
+.messages-home-layout {
+    grid-template-columns: 260px minmax(0, 1fr);
+}
+
+.messages-shell {
+    min-width: 0;
+    min-height: 100vh;
+    display: grid;
+    grid-template-columns: minmax(260px, 360px) minmax(0, 1fr);
+    background: var(--bg-color);
+}
+
+.conversation-panel {
+    min-width: 0;
+    border-right: 1px solid var(--pink-border);
+    background: rgba(255, 250, 252, 0.82);
+}
+
+.messages-panel-header,
+.chat-header {
+    min-height: 92px;
+    padding: 18px 22px;
+    border-bottom: 1px solid var(--pink-border);
+    background: rgba(255, 250, 252, 0.92);
+}
+
+.messages-panel-header h1,
+.chat-header h2 {
+    margin: 3px 0 0;
+    color: var(--text-main);
+}
+
+.conversation-list {
+    display: flex;
+    flex-direction: column;
+}
+
+.conversation-item {
+    width: 100%;
+    min-width: 0;
+    display: flex;
+    align-items: center;
+    gap: 11px;
+    padding: 15px 17px;
+    border: none;
+    border-bottom: 1px solid var(--pink-border);
+    background: transparent;
+    color: var(--text-main);
+    font: inherit;
+    text-align: left;
+    cursor: pointer;
+}
+
+.conversation-item:hover,
+.conversation-item.active {
+    background: var(--pink-light);
+}
+
+.conversation-avatar {
+    width: 42px;
+    height: 42px;
+}
+
+.conversation-copy {
+    min-width: 0;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.conversation-copy strong,
+.conversation-copy small {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.conversation-copy small { color: var(--text-soft); }
+
+.unread-badge {
+    min-width: 22px;
+    height: 22px;
+    display: grid;
+    place-items: center;
+    padding: 0 6px;
+    border-radius: 999px;
+    background: var(--rose-main);
+    color: #fff;
+    font-size: 11px;
+    font-weight: 800;
+}
+
+.chat-panel {
+    min-width: 0;
+    height: 100vh;
+    display: grid;
+    grid-template-rows: auto minmax(0, 1fr) auto;
+    background: rgba(255, 255, 255, 0.72);
+}
+
+.chat-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.connection-status {
+    color: var(--text-soft);
+    font-size: 12px;
+}
+
+.connection-status.connected { color: #168a5b; }
+
+.message-list {
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 22px;
+}
+
+.chat-placeholder {
+    margin: auto;
+    color: var(--text-soft);
+    text-align: center;
+}
+
+.message-row { display: flex; }
+.message-row.mine { justify-content: flex-end; }
+.message-row.theirs { justify-content: flex-start; }
+
+.message-bubble {
+    max-width: min(72%, 560px);
+    padding: 10px 14px 8px;
+    border: 1px solid var(--pink-border);
+    border-radius: 18px 18px 18px 5px;
+    background: var(--card-bg);
+    color: var(--text-main);
+}
+
+.message-row.mine .message-bubble {
+    border-color: transparent;
+    border-radius: 18px 18px 5px 18px;
+    background: var(--rose-main);
+    color: #fff;
+}
+
+.message-bubble p {
+    margin: 0;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+}
+
+.message-bubble small {
+    display: block;
+    margin-top: 5px;
+    color: inherit;
+    font-size: 10px;
+    opacity: 0.72;
+    text-align: right;
+}
+
+.message-composer {
+    display: flex;
+    align-items: flex-end;
+    gap: 10px;
+    padding: 14px 18px;
+    border-top: 1px solid var(--pink-border);
+    background: var(--card-bg);
+}
+
+.message-composer textarea {
+    min-height: 46px;
+    max-height: 130px;
+    flex: 1;
+    resize: vertical;
+    padding: 12px 15px;
+    border: 1px solid var(--pink-border);
+    border-radius: 17px;
+    outline: none;
+    background: var(--bg-color);
+    color: var(--text-main);
+    font: inherit;
+}
+
+.message-composer .primary-button {
+    min-width: 92px;
+    margin: 0;
+}
+
+body.dark-mode .conversation-panel,
+body.dark-mode .messages-panel-header,
+body.dark-mode .chat-header,
+body.dark-mode .chat-panel {
+    background: var(--card-bg);
+    border-color: var(--border-color);
+}
+
+@media (max-width: 760px) {
+    .messages-shell {
+        min-height: calc(100vh - 65px);
+        grid-template-columns: 110px minmax(0, 1fr);
+        padding-bottom: 65px;
+    }
+    .messages-panel-header { padding: 15px 10px; }
+    .messages-panel-header h1 { font-size: 18px; }
+    .conversation-item { justify-content: center; padding: 12px 6px; }
+    .conversation-copy, .unread-badge { display: none; }
+    .chat-header { min-height: 76px; padding: 13px 14px; }
+    .chat-header h2 { font-size: 18px; }
+    .message-list { padding: 14px 10px; }
+    .message-bubble { max-width: 88%; }
+    .message-composer { padding: 10px; }
+    .message-composer .primary-button { min-width: 70px; padding: 0 12px; }
+}
+
 .profile-header {
     border-bottom: 1px solid var(--pink-border);
 }
@@ -1252,6 +1405,7 @@ body {
     margin-top: 6px;
     font-size: 14px;
 }
+
 .search-username {
     cursor: pointer;
     text-decoration: underline;
@@ -1261,15 +1415,20 @@ body {
 .search-username:hover {
     color: #d63384;
 }
+
 .modal-overlay {
     position: fixed;
-    top: 0; left: 0; right: 0; bottom: 0;
-    background: rgba(0,0,0,0.5);
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
     display: flex;
     align-items: center;
     justify-content: center;
     z-index: 1000;
 }
+
 .modal-box {
     background: #fff;
     width: 320px;
@@ -1278,35 +1437,42 @@ body {
     border-radius: 8px;
     padding: 16px;
 }
+
 .modal-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
     margin-bottom: 12px;
 }
+
 .follow-list-item {
     padding: 8px 0;
     cursor: pointer;
     border-bottom: 1px solid #eee;
 }
+
 .comments-area {
     display: none;
     margin-top: 8px;
 }
+
 .comment-item {
     padding: 6px 0;
     border-top: 1px solid #eee;
 }
+
 .comment-date {
     font-size: 0.8em;
     color: #888;
     margin-left: 6px;
 }
+
 .comment-form {
     display: flex;
     gap: 6px;
     margin-top: 8px;
 }
+
 .comment-input {
     flex: 1;
     padding: 4px 8px;

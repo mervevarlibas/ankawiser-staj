@@ -2,6 +2,7 @@ package com.mwitter.service;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+
 import java.util.List;
 
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -20,22 +21,20 @@ import com.mwitter.security.JwtService;
 import lombok.RequiredArgsConstructor;
 
 @Service
-@RequiredArgsConstructor
+@RequiredArgsConstructor//final değişkenleri için otomatik bir kurucu oluşturur
 public class UserService {
 
-    private final EmailService emailService;
+    private final EmailService emailService;//doğrulama mailleri atmak için
     private final UserRepository userRepository; // bu sınıfın calısabilmesi için userrepository sınıfını kullanıyoruz.
                                                  // final ile değiştirilemez hale getiriyoruz.
-    private final BCryptPasswordEncoder passwordEncoder;
-    private final JwtService jwtService;
+    private final BCryptPasswordEncoder passwordEncoder;//şifreleri karmaşık hale getirir güvenlik için
+    private final JwtService jwtService;//giriş yapıldığında token basar
 
     public UserResponse saveUser(RegisterRequest request) { // dışarıdan doğrudan user gelmiyor.kayıt için gerekli
                                                             // alanları taşıyan registerrequest geliyor
         if (userRepository.findByEmail(request.getEmail()).isPresent()) {
 
-            throw new RuntimeException("Email already exists.");// throw programın akışını durdurur ve bir hata mesajı
-                                                                // döndürür. Burada, eğer kullanıcı zaten kayıtlıysa bir
-                                                                // hata mesajı döndürülür.
+            throw new RuntimeException("Email already exists.");
         }
         if (userRepository.findByUsername(request.getUsername()).isPresent()) {
 
@@ -64,7 +63,7 @@ public class UserService {
 
     }
 
-    public void verifyCode(String email, String code) {// doğrulama kodunu kontrol eder.
+    public void verifyCode(String email, String code) {// doğrulama kodunu kontrol eder.kullanıcı mailindeki kodu frontend e girdiğinde çalışır
 
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("User not found."));
@@ -77,7 +76,7 @@ public class UserService {
             throw new RuntimeException("Verification code has expired. Please request a new one.");
         }
 
-        if (!user.getVerificationCode().equals(code)) {
+        if (!user.getVerificationCode().equals(code)) {//kod doğru mu
             throw new RuntimeException("Invalid verification code.");
         }
         user.setVerified(true);
@@ -110,11 +109,10 @@ public class UserService {
 
     public LoginResponse login(LoginRequest loginRequest) {
         User user = userRepository.findByEmail(loginRequest.getEmail())
-                .orElseThrow(() -> // orelsethrow kullanıcı bulunmadığında zaten metodu durduruyor o yüzden
-                                   // opsiyonel kısmını kaldırdım
+                .orElseThrow(() -> // orelsethrow kullanıcı bulunmadığında zaten metodu durduruyor o yüzden opsiyonel kısmını kaldırdım
                 new RuntimeException("Email or password is incorrect."));
 
-        if (!passwordEncoder.matches(
+        if (!passwordEncoder.matches(//kullanıcnın girdiği şifreyle veritabanındaki şifrelenmiş şifreyi kıyaslar
                 loginRequest.getPassword(),
                 user.getPassword())) {
             throw new RuntimeException("Email or password is incorrect.");
@@ -123,29 +121,24 @@ public class UserService {
         if (!user.isVerified()) {
             throw new RuntimeException("Please verify your email before logging in.");
         }
-        String token = jwtService.generateToken(user.getId());
+        String token = jwtService.generateToken(user.getId());//jwt servis üzerinden bir token üretir ve bunu loginresponse olarak frontende gönderir
         return convertToLoginResponse(user, token);// cevaba eklemek icin
 
     }
 
-    public UserResponse findByUsername(String username) {// username e göre kullanıcıyı bulmak için findByUsername
-                                                         // metodunu oluşturuyoruz
+    public UserResponse findByUsername(String username) {// username e göre kullanıcıyı bulmak için
 
         User user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new RuntimeException("User not found."));// orElseThrow metodu, eğer kullanıcı
-                                                                            // bulunamazsa bir hata fırlatır.
+                .orElseThrow(() -> new RuntimeException("User not found."));// orElseThrow metodu, eğer kullanıcı bulunamazsa bir hata fırlatır.
 
         return convertToResponse(user);
     }
 
-    public void followUser(String followerId, String followingId) {// void dedik çünkü mevcut iki kullanıcıyı
-                                                                   // güncelleyeceğiz.geriye değer döndürmemiz gereken
-                                                                   // nesne yok
+    public void followUser(String followerId, String followingId) {// void dedik çünkü mevcut iki kullanıcıyı güncelleyeceğiz.geriye değer döndürmemiz gereken nesne yok
 
         User followerUser = getUserById(followerId);
         User followingUser = getUserById(followingId);
-        if (followerId.equals(followingId)) {// string karşılaştırdığımız için equals metodunu kullanıyoruz. kullanıcı
-                                             // kendini takip edemez.
+        if (followerId.equals(followingId)) {// string karşılaştırdığımız için equals metodunu kullanıyoruz. kullanıcıkendini takip edemez.
             throw new RuntimeException("You cannot follow yourself.");
         }
 
@@ -185,43 +178,43 @@ public class UserService {
     }
 
     public List<UserResponse> getFollowing(String userId) {// kullanıcının takip ettiği kullanıcıları getirmek için
-                                                           // getFollowing metodunu oluşturuyoruz
-        User user = getUserById(userId);
+                                                           
+         User user = getUserById(userId);
+    List<User> validUsers = getValidUsersAndCleanup(user, user.getFollowing(), true);//kontrol edilecek ana nesne, id listesi, bayrak
 
-        List<UserResponse> responses = new ArrayList<>();
+    List<UserResponse> responses = new ArrayList<>();//frontende göndermek için içi boş liste
+    for (User followingUser : validUsers) {//validusers listesini tek tek dönüyor her adımda listeye atıyor
+        responses.add(convertToResponse(followingUser));//kişiyi alıp şifresini vs gizlemesi için converttoresponse a alıyor sonra listeye ekliyor.
+    }
 
-        for (String followingId : user.getFollowing()) {// kullanıcının following listesindeki idleri tek tek geziyoruz
-            User followingUser = getUserById(followingId);
-
-            responses.add(convertToResponse(followingUser));
-        }
-
-        return responses;
+    return responses;
     }
 
     public List<UserResponse> getFollowers(String userId) {
-        User user = getUserById(userId);
+         User user = getUserById(userId);
+    List<User> validUsers = getValidUsersAndCleanup(user, user.getFollowers(), false);
 
-        List<UserResponse> responses = new ArrayList<>();
+    List<UserResponse> responses = new ArrayList<>();
+    for (User followerUser : validUsers) {
+        responses.add(convertToResponse(followerUser));
+    }
 
-        for (String followerId : user.getFollowers()) {
-            User followerUser = getUserById(followerId);
-
-            responses.add(convertToResponse(followerUser));
-        }
-
-        return responses;
+    return responses;
     }
 
     public ProfileResponse getProfile(String userId) {
-        User user = getUserById(userId);
+         User user = getUserById(userId);
 
-        return new ProfileResponse(
-                user.getId(),
-                user.getUsername(),
-                user.getEmail(),
-                user.getFollowers().size(),
-                user.getFollowing().size());
+    int followersCount = getValidUsersAndCleanup(user, user.getFollowers(), false).size();
+    int followingCount = getValidUsersAndCleanup(user, user.getFollowing(), true).size();
+
+    return new ProfileResponse(
+            user.getId(),
+            user.getUsername(),
+            user.getEmail(),
+            followersCount,
+            followingCount
+    );
     }
 
     public User getUserById(String userId) {// hem userservice hem de commentservice kullanacağı için public.
@@ -273,5 +266,29 @@ public void changePassword(String userId, ChangePasswordRequest request) {
     user.setPassword(hashedPassword);
 
     userRepository.save(user);
+}
+private List<User> getValidUsersAndCleanup(User owner, List<String> ids, boolean isFollowingList) {
+
+    List<User> foundUsers = userRepository.findAllById(ids);//mongodbden bu idlere sahip kullanıcıları getirtir
+
+    // Bazı id'ler artık veritabanında yoksa (kullanıcı silinmiş),
+    // listeyi sadece var olan id'lerle güncelleyip kalıcı olarak temizliyoruz.
+    if (foundUsers.size() != ids.size()) {//diyelim üç id var ama birisi silindi 2 gözüküyor
+
+        List<String> validIds = new ArrayList<>();//sadece var olan geçerli idleri tutmak için boş liste yaratıyor
+        for (User u : foundUsers) {//sadece veritabanından dönmeyi başaran o 2 idyi çekiyor ve listeye ekliyor
+            validIds.add(u.getId());
+        }
+
+        if (isFollowingList) {
+            owner.setFollowing(validIds);
+        } else {//metodu following değil de followers çağırdıysa bu listeyi temizliyor
+            owner.setFollowers(validIds);
+        }
+
+        userRepository.save(owner);//gerçek hafızaya mongodbye atıyoruz
+    }
+
+    return foundUsers;
 }
 }

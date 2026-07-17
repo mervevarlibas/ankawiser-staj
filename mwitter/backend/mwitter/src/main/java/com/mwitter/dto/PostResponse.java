@@ -24,4 +24,16 @@ public class PostResponse {
     private int likeCount;
 
     private boolean likedByCurrentUser;//ben begendim mi
+
+    private int repostCount;
+
+    private boolean repostedByCurrentUser;
+
+    private boolean repost;
+
+    private String repostedByUserId;
+
+    private String repostedByUsername;
+
+    private LocalDateTime repostedAt;
 }

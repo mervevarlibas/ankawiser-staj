@@ -1,6 +1,7 @@
 $(document).ready(function() {
 
     const token = localStorage.getItem("token");
+    const currentUserId = localStorage.getItem("userId");
 
     const params = new URLSearchParams(window.location.search);
     const postId = params.get("postId");
@@ -52,6 +53,11 @@ $(document).ready(function() {
                             </span>
                             <span>${post.likeCount}</span>
                         </button>
+                        ${post.userId === currentUserId ? `
+                            <button type="button"
+                                class="post-action delete-post-button"
+                                data-post-id="${post.id}">Sil</button>
+                        ` : ""}
                     </div>
 
                     <div class="comments-area" id="comments-${post.id}"></div>
@@ -97,6 +103,37 @@ $(document).ready(function() {
                 }
 
                 alert(message);
+            }
+        });
+    });
+
+    $("#postDetail").on("click", ".delete-post-button", function() {
+        const clickedPostId = $(this).data("post-id");
+        if (!confirm("Bu gönderiyi silmek istediğine emin misin?")) return;
+
+        $.ajax({
+            url: "http://localhost:8080/posts/" + clickedPostId,
+            method: "DELETE",
+            headers: { Authorization: "Bearer " + token },
+            success: function() { window.location.href = "index.html"; },
+            error: function(xhr) {
+                alert(xhr.responseJSON?.message || "Gönderi silinemedi.");
+            }
+        });
+    });
+
+    $("#postDetail").on("click", ".delete-comment-button", function() {
+        const clickedPostId = $(this).data("post-id");
+        const commentId = $(this).data("comment-id");
+        if (!confirm("Bu yorumu silmek istediğine emin misin?")) return;
+
+        $.ajax({
+            url: "http://localhost:8080/posts/" + clickedPostId + "/comments/" + commentId,
+            method: "DELETE",
+            headers: { Authorization: "Bearer " + token },
+            success: function() { loadComments(clickedPostId); },
+            error: function(xhr) {
+                alert(xhr.responseJSON?.message || "Yorum silinemedi.");
             }
         });
     });
@@ -150,6 +187,7 @@ $(document).ready(function() {
 function loadComments(postId) {
 
     const token = localStorage.getItem("token");
+    const currentUserId = localStorage.getItem("userId");
     const commentsArea = $("#comments-" + postId);
 
     // CSS'te .comments-area varsayılan olarak gizli (timeline'daki
@@ -179,6 +217,12 @@ function loadComments(postId) {
                         <div class="comment-item">
                             <strong>${comment.username}</strong>
                             <span class="comment-date">${formattedDate}</span>
+                            ${comment.userId === currentUserId ? `
+                                <button type="button"
+                                    class="delete-comment-button"
+                                    data-post-id="${postId}"
+                                    data-comment-id="${comment.id}">Sil</button>
+                            ` : ""}
                             <p>${comment.content}</p>
                         </div>
                     `);

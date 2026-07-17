@@ -61,6 +61,23 @@ private CommentResponse convertToResponse(//bunları alıp frontend'in anlayaca�
             username
     );
 }
+public void deleteComment(String postId, String commentId, String userId) {
+    postService.getPostById(postId);
+
+    Comment comment = commentRepository.findById(commentId)
+            .orElseThrow(() -> new RuntimeException("Comment not found."));
+
+    if (!comment.getPostId().equals(postId)) {
+        throw new RuntimeException("Comment does not belong to this post.");
+    }
+
+    if (!comment.getUserId().equals(userId)) {
+        throw new RuntimeException("You can only delete your own comment.");
+    }
+
+    commentRepository.delete(comment);
+}
+
 public List<CommentResponse> getCommentsByPostId(String postId) {
 
     postService.getPostById(postId);//Önce post gerçekten var mı diye kontrol ediyor. Yoksa Post not found. hatası verir
@@ -75,7 +92,7 @@ public List<CommentResponse> getCommentsByPostId(String postId) {
         User user = userService.getUserById(comment.getUserId());//her yorumun sahibini bulur 
 
         responses.add(
-                convertToResponse(comment, user.getUsername())//dtoya çevirip listeye ekler
+                convertToResponse(comment, user.getUsername())//dtoya çevirip listeye ekler. idyi userrname ile birleştirir
         );
     }
 

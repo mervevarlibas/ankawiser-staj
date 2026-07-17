@@ -21,7 +21,7 @@ public class JwtService {
             @Value("${jwt.expiration}") long expiration) {//süre değerini alır
 
         this.secretKey = Keys.hmacShaKeyFor(//bu byte dizisinden imzasında kullanılabilecek secretkey oluşturur
-                secret.getBytes(StandardCharsets.UTF_8)//gizli anahtar metnini byte dizisine çevirir
+                secret.getBytes(StandardCharsets.UTF_8)//gizli anahtar metnini byte dizisine çevirir. b anahtar sadece benim sunucumda var
         );
 
         this.expiration = expiration;
@@ -42,14 +42,14 @@ public class JwtService {
                 .signWith(secretKey)//tokeni gizli anahtarla imzalar
                 .compact();//jwtyi üç parçalı metne dönüştürür
     }
-public String extractUserId(String token) {
+public String extractUserId(String token) {//kimlik okuma.istek geldiğinde
 
     return Jwts.parser()//jwtyi okuyacak bir parser oluşturmaya başlar
             .verifyWith(secretKey)//TOKEN imzasını bizim gizli anahtarımızla kontrol eder
             .build()//parser nesnesini hazırlar
             .parseSignedClaims(token)//gönderilen tokeni ayrıştırır ve imzasını doğrular
             .getPayload()
-            .getSubject();
+            .getSubject();//eğer imza bozulmamışsa içindeki kullanıcı ID'sini çıkarıp Controller'lardaki o Authentication nesnesinin içine koyulması için teslim eder.
 }
 
 public boolean isTokenValid(String token) {//token doğrulamayı dener

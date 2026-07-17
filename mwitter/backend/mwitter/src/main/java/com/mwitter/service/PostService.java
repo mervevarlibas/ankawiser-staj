@@ -2,6 +2,7 @@ package com.mwitter.service;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -13,210 +14,248 @@ import org.springframework.stereotype.Service;
 import com.mwitter.dto.CreatePostRequest;
 import com.mwitter.dto.PostResponse;
 import com.mwitter.model.Post;
+import com.mwitter.model.Repost;
 import com.mwitter.model.User;
 import com.mwitter.repository.PostRepository;
+import com.mwitter.repository.CommentRepository;
+import com.mwitter.repository.RepostRepository;
 import com.mwitter.repository.UserRepository;
 
 import lombok.RequiredArgsConstructor;
 
 @Service
-@RequiredArgsConstructor//final olan repository’ler için constructor’ı Lombok otomatik oluşturur.
+@RequiredArgsConstructor
 public class PostService {
 
-    private final PostRepository postRepository; //bu tweet i kaydetmek için postRepository i çağırıyoruz
-    private final UserRepository userRepository; //bu tweet i kim atıyor onu bilmek için userRepository i çağırıyoruz
+    private final PostRepository postRepository;//gönderileri kaydetmek,bulmak için
+    private final UserRepository userRepository;//gönderiyi atan kişinin bilgilerini almak için
+    private final RepostRepository repostRepository;//retweet işlemleri için
+    private final CommentRepository commentRepository;//yorumları yönetmek için
 
-    public PostResponse createPost(CreatePostRequest request, String userId) {//frontendden gelen tweet oluşturma isteğini alır
-        User user = getUserById(userId);//posta kullanıcı nesnesi değil user id koyuyoruz
+    public PostResponse createPost(CreatePostRequest request, String userId) {
+        User user = getUserById(userId);//userid ile gelen kullanıcıyı bulur
         Post post = new Post();
-        post.setContent(request.getContent());//tweetin içeriğini post nesnesine atıyoruz
-        post.setCreatedAt(LocalDateTime.now());//tweetin atıldığı zamanı post nesnesine atıyoruz
-        post.setUserId(user.getId());//tweeti atan kullanıcıyı post nesnesine atıyoruz
+        post.setContent(request.getContent());//gelen metinleri alır
+        post.setCreatedAt(LocalDateTime.now());
+        post.setUserId(user.getId());
 
-        Post savedPost = postRepository.save(post);//Post MongoDB’ye kaydediliyor. Kaydedildikten sonra MongoDB buna id verir. O yüzden sonucu savedPost içine alıyorsun.
-
-        return convertToResponse(
-                savedPost,
-                user.getUsername(),
-                user.getId()
-        );
+        Post savedPost = postRepository.save(post);//yeni bir post oluşturup vtabanına kaydeder
+        return convertToResponse(savedPost, user.getUsername(), user.getId());//frontend ekrana çizbilsin diye güvenli format
     }
 
-    public List<PostResponse> getAllPosts() {//birden fazla tweeti listelemek için getAllPosts metodunu oluşturuyoruz
-        List<Post> posts = postRepository.findAllByOrderByCreatedAtDesc();//MongoDB deki tüm postları createdAt e göre azalan sırada getiriyor
-        Set<String> userIds = new HashSet<>();//birden fazla postun sahibini bulmak için userId leri bir set içine alıyoruz. Set, aynı değeri birden fazla kez eklemeye izin vermez.
-
-        for (Post post : posts) {//her postun userId sini alıyoruz ve set içine ekliyoruz
-            userIds.add(post.getUserId());
-        }
-
-        List<User> users = userRepository.findAllById(userIds);//MongoDB deki tüm userId leri kullanarak kullanıcıları getiriyoruz
-
-        Map<String, User> usersById = new HashMap<>();//kullanıcıları id ile kolay bulmak için map oluşturuyoruz.her postun sahibini bulmak için kullanıcıları bir map içine alıyoruz. Map, key-value çiftlerini saklar. Burada key userId, value ise User nesnesi olacak.
-
-        for (User user : users) {//her kullanıcıyı map içine ekliyoruz. userId yi key> User nesnesini value olarak ekliyoruz.
-            usersById.put(user.getId(), user);//ilk anahtar sonra değer
-        }
-
+    public List<PostResponse> getAllPosts() {//Veritabanından tarihe göre sıralı tüm postları çeker.
+        List<Post> posts = postRepository.findAllByOrderByCreatedAtDesc();
+        Map<String, User> usersById = getUsersByIdForPosts(posts);
         List<PostResponse> responses = new ArrayList<>();
 
         for (Post post : posts) {
-
-            User postUser = usersById.get(post.getUserId());// postun sahibini map den alıyoruz. userId yi key olarak kullanıyoruz.
-
-            if (postUser == null) {//postta userid var fakat o kullanıcı silinmişse null sonucunu anlamlı hata olarak veriyoruz
+            User postUser = usersById.get(post.getUserId());
+            if (postUser == null) {
                 throw new RuntimeException("Post owner not found.");
             }
-
-            responses.add(
-                    convertToResponse(
-                            post,
-                            postUser.getUsername(),
-                            null
-                    )
-            );
+            responses.add(convertToResponse(post, postUser.getUsername(), null));
         }
 
         return responses;
-
     }
 
-    public List<PostResponse> getPostsByUserId(String userId, String currentUserId) {//belirli kullanıcının attığı tweetleri listelemek için getPostsByUserId metodunu oluşturuyoruz
+    public List<PostResponse> getPostsByUserId(String userId, String currentUserId) {//birinin profiline girdiğimizde çalışır
         User user = getUserById(userId);
         List<Post> posts = postRepository.findByUserIdOrderByCreatedAtDesc(userId);
-
         List<PostResponse> responses = new ArrayList<>();
 
         for (Post post : posts) {
-
-            responses.add(
-                    convertToResponse(
-                            post,
-                            user.getUsername(),
-                            currentUserId 
-                    )
-            );
+            responses.add(convertToResponse(post, user.getUsername(), currentUserId));
         }
 
+        addRepostResponses(responses, repostRepository.findByUserId(userId), currentUserId);
+        sortByDisplayDate(responses);
         return responses;
     }
 
     public void likePost(String postId, String userId) {
+        Post post = getPostById(postId);
+        getUserById(userId);
 
-        Post post = getPostById(postId);//beğenilcek postu mongodbden bulur.yoksa hata mesajı verir
-
-        getUserById(userId);//JWT’den gelen kullanıcı id’sinin gerçekten veritabanında olup olmadığını kontrol eder
-
-        if (post.getLikedUserIds().contains(userId)) {//bu kullancı postu daha önceden begenmis mi
+        if (post.getLikedUserIds().contains(userId)) {//listede var mı diye bakar yoksa ekler
             throw new RuntimeException("You already liked this post.");
         }
 
-        post.getLikedUserIds().add(userId);//gerçek beğenme işlemi.kullanıcı idsini set içine ekler
-
-        postRepository.save(post);//update işlemi.mongodbde mevcut postu günceller
-    }
-
-    public void unlikePost(String postId, String userId) {
-
-        Post post = getPostById(postId);
-
-        getUserById(userId);
-
-        if (!post.getLikedUserIds().contains(userId)) {// ünlem sonucu tersine çevirir
-            throw new RuntimeException("You have not liked this post.");
-        }
-
-        post.getLikedUserIds().remove(userId);//kullanıcı id’sini beğenenler arasından çıkarır
-
+        post.getLikedUserIds().add(userId);
         postRepository.save(post);
     }
 
-    private PostResponse convertToResponse(
-            Post post,
-            String username,
-            String currentUserId //likedbycurrentuser  hesaplamak için id bilmeliyiz
-    ) {
+    public void unlikePost(String postId, String userId) {
+        Post post = getPostById(postId);
+        getUserById(userId);
 
+        if (!post.getLikedUserIds().contains(userId)) {
+            throw new RuntimeException("You have not liked this post.");
+        }
+
+        post.getLikedUserIds().remove(userId);
+        postRepository.save(post);
+    }
+
+    public void repostPost(String postId, String userId) {
+        getPostById(postId);
+        getUserById(userId);
+
+        if (repostRepository.findByUserIdAndPostId(userId, postId).isPresent()) {
+            throw new RuntimeException("You already reposted this post.");
+        }
+
+        Repost repost = new Repost();
+        repost.setUserId(userId);
+        repost.setPostId(postId);
+        repost.setCreatedAt(LocalDateTime.now());
+        repostRepository.save(repost);
+    }
+
+    public void undoRepost(String postId, String userId) {
+        Repost repost = repostRepository.findByUserIdAndPostId(userId, postId)
+                .orElseThrow(() -> new RuntimeException("Repost not found."));
+        repostRepository.delete(repost);
+    }
+
+    public Post getPostById(String postId) {
+        return postRepository.findById(postId)
+                .orElseThrow(() -> new RuntimeException("Post not found."));
+    }
+
+    public void deletePost(String postId, String userId) {
+        Post post = getPostById(postId);//postu bulur
+
+        if (!post.getUserId().equals(userId)) {//postu silmek isteyen lişi ile postun sahibi aynı mı
+            throw new RuntimeException("You can only delete your own post.");
+        }
+
+        commentRepository.deleteByPostId(postId);
+        repostRepository.deleteByPostId(postId);
+        postRepository.delete(post);
+    }
+
+    public List<PostResponse> getTimeline(String userId) {
+        User user = getUserById(userId);
+        List<String> timelineUserIds = new ArrayList<>(user.getFollowing());//user servisine gidip takip ettiklerimizin idsini listeye ekler
+        timelineUserIds.add(user.getId());
+
+        List<Post> posts = postRepository.findByUserIdInOrderByCreatedAtDesc(timelineUserIds);
+        Map<String, User> usersById = getUsersByIdForPosts(posts);
+        List<PostResponse> responses = new ArrayList<>();
+
+        for (Post post : posts) {
+            User postUser = usersById.get(post.getUserId());
+            if (postUser == null) {
+                throw new RuntimeException("Post owner not found.");
+            }
+            responses.add(convertToResponse(post, postUser.getUsername(), userId));
+        }
+
+        addRepostResponses(responses, repostRepository.findByUserIdIn(timelineUserIds), userId);
+        sortByDisplayDate(responses);
+        return responses;
+    }
+
+    public PostResponse getPostByIdForResponse(String postId, String currentUserId) {
+        Post post = getPostById(postId);
+        User postUser = getUserById(post.getUserId());
+        return convertToResponse(post, postUser.getUsername(), currentUserId);
+    }
+
+    private PostResponse convertToResponse(Post post, String username, String currentUserId) {
         PostResponse response = new PostResponse();
-
         response.setId(post.getId());
         response.setContent(post.getContent());
         response.setCreatedAt(post.getCreatedAt());
         response.setUserId(post.getUserId());
         response.setUsername(username);
-        response.setLikeCount(post.getLikedUserIds().size());//setin eleman sayısını response a koyar
-
-        boolean likedByCurrentUser
-                = currentUserId != null //giriş yapan kullanıcı bilgisi var mı
-                && post.getLikedUserIds().contains(currentUserId); //bu kullanıcı beğenenler arasında mı
-
-        response.setLikedByCurrentUser(likedByCurrentUser);
-
+        response.setLikeCount(post.getLikedUserIds().size());//beğeni sayısı
+        response.setLikedByCurrentUser(
+                currentUserId != null && post.getLikedUserIds().contains(currentUserId)//kalp ikonunun boş olup olmadığını frontende göndermek için
+        );
+        response.setRepostCount((int) repostRepository.countByPostId(post.getId()));
+        response.setRepostedByCurrentUser(
+                currentUserId != null
+                && repostRepository.findByUserIdAndPostId(currentUserId, post.getId()).isPresent()
+        );
         return response;
     }
 
-    private User getUserById(String userId) {
+    private void addRepostResponses(
+            List<PostResponse> responses,
+            List<Repost> reposts,
+            String currentUserId) {
 
+        if (reposts.isEmpty()) {
+            return;
+        }
+
+        Set<String> postIds = new HashSet<>();
+        Set<String> userIds = new HashSet<>();
+        for (Repost repost : reposts) {
+            postIds.add(repost.getPostId());
+            userIds.add(repost.getUserId());
+        }
+
+        Map<String, Post> postsById = new HashMap<>();
+        for (Post post : postRepository.findAllById(postIds)) {
+            postsById.put(post.getId(), post);
+            userIds.add(post.getUserId());
+        }
+
+        Map<String, User> usersById = new HashMap<>();
+        for (User user : userRepository.findAllById(userIds)) {
+            usersById.put(user.getId(), user);
+        }
+
+        for (Repost repost : reposts) {
+            Post post = postsById.get(repost.getPostId());
+            User repostingUser = usersById.get(repost.getUserId());
+            if (post == null || repostingUser == null) {
+                continue;
+            }
+
+            User postOwner = usersById.get(post.getUserId());
+            if (postOwner == null) {
+                continue;
+            }
+
+            PostResponse response = convertToResponse(post, postOwner.getUsername(), currentUserId);
+            response.setRepost(true);
+            response.setRepostedByUserId(repostingUser.getId());
+            response.setRepostedByUsername(repostingUser.getUsername());
+            response.setRepostedAt(repost.getCreatedAt());
+            responses.add(response);
+        }
+    }
+
+    private Map<String, User> getUsersByIdForPosts(List<Post> posts) {
+        Set<String> userIds = new HashSet<>();
+        for (Post post : posts) {
+            userIds.add(post.getUserId());
+        }
+
+        Map<String, User> usersById = new HashMap<>();
+        for (User user : userRepository.findAllById(userIds)) {//mongodbye sadece bir kere gidip postları yazanları tek seferde alıyoruz
+            usersById.put(user.getId(), user);
+        }
+        return usersById;
+    }
+
+    private User getUserById(String userId) {
         return userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found."));
     }
 
-    public Post getPostById(String postId) {//hem postservice hem de commentservice kullandığı icin public.public.like ve unlike işlemlerinde metod tekrarı olmasın diye
-
-        return postRepository.findById(postId)
-                .orElseThrow(()
-                        -> new RuntimeException("Post not found."));
+    private void sortByDisplayDate(List<PostResponse> responses) {
+        responses.sort(
+                Comparator.comparing(//eğer bu veri bir repost ise sıralamayı o tarihe göre yap,postsa oluşturma tarihine göre
+                        (PostResponse response) -> response.isRepost()
+                                ? response.getRepostedAt()
+                                : response.getCreatedAt(),
+                        Comparator.nullsLast(Comparator.naturalOrder())
+                ).reversed()//en yeni en üstte olacak şekilde ters çevir
+        );
     }
-
-    public List<PostResponse> getTimeline(String userId) {
-
-        User user = getUserById(userId);//jwtden gelen idye sahip kullanıcıyı bulur
-
-        List<String> timelineUserIds
-                = new ArrayList<>(user.getFollowing());//kullanıcının takip ettiği idlerin kopyasını oluşturur
-
-        timelineUserIds.add(user.getId());//kullanıcının kendi postlarının da timeline da görünmesini sağlar
-
-        List<Post> posts
-                = postRepository.findByUserIdInOrderByCreatedAtDesc(
-                        timelineUserIds
-                );
-
-        List<User> users
-                = userRepository.findAllById(timelineUserIds);
-
-        Map<String, User> usersById = new HashMap<>();
-
-        for (User timelineUser : users) {
-            usersById.put(timelineUser.getId(), timelineUser);
-        }
-
-        List<PostResponse> responses = new ArrayList<>();
-
-        for (Post post : posts) {
-
-            User postUser = usersById.get(post.getUserId());
-
-            if (postUser == null) {
-                throw new RuntimeException("Post owner not found.");
-            }
-
-            responses.add(
-                    convertToResponse(
-                            post,
-                            postUser.getUsername(),
-                            userId
-                    )
-            );
-        }
-
-        return responses;
-    }
-    public PostResponse getPostByIdForResponse(String postId, String currentUserId) {
-
-    Post post = getPostById(postId);   // zaten var olan metot
-    User postUser = getUserById(post.getUserId());
-
-    return convertToResponse(post, postUser.getUsername(), currentUserId);
-}
 }

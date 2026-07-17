@@ -1,14 +1,28 @@
-package com.mwitter.dto;//bu sınıfın görevi backendden frontende cevap taşımak.
+package com.mwitter.dto;
+
 import java.time.LocalDateTime;
 
-import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-@Data//sınıftaki alanlar için otomatik get set üretir
+
+@Data
 @NoArgsConstructor
-@AllArgsConstructor
 public class MessageResponse {
-private LocalDateTime timestamp;
+
+    private LocalDateTime timestamp;
     private String message;
 
+    private String id;
+    private String senderId;
+    private String senderUsername;
+    private String receiverId;
+    private String receiverUsername;
+    private String content;
+    private LocalDateTime sentAt;
+    private boolean read;
+
+    public MessageResponse(LocalDateTime timestamp, String message) {
+        this.timestamp = timestamp;
+        this.message = message;
+    }
 }

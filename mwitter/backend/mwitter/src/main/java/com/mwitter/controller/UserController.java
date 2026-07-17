@@ -27,24 +27,21 @@ import com.mwitter.service.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
-@RestController // sınıfın HTTP isteklerini(get,post..) işleyebileceğini ve JSON formatında
-                // yanıtlar döndürebileceğini belirtir.
+@RestController // sınıfın HTTP isteklerini(get,post..) işleyebileceğini ve JSON formatında yanıtlar döndürebileceğini belirtir.
 @RequiredArgsConstructor
 @RequestMapping("/users")
 public class UserController {
 
     private final UserService userService; // çalışabilmesi için userservice i çağırıyoruz
 
-    @PostMapping("/login") // biri POST http://localhost:8080/login adresine bir istek gönderdiğinde bu
-                           // metod çalışacak
-    public LoginResponse login(@Valid @RequestBody LoginRequest loginRequest) {
+    @PostMapping("/login") // biri POST http://localhost:8080/login adresine bir istek gönderdiğinde bu metod çalışacak
+    public LoginResponse login(@Valid @RequestBody LoginRequest loginRequest) {//kurallara uyup uymadığı,json formatındaki veriyi loginrequest içine koyar
 
         return userService.login(loginRequest);// service gönderiyor.
 
     }
 
-    @PostMapping("/register") // biri POST http://localhost:8080/register adresine bir istek gönderdiğinde bu
-                              // metod çalışacak
+    @PostMapping("/register") // biri POST http://localhost:8080/register adresine bir istek gönderdiğinde bu metod çalışacak
     public UserResponse registerUser(@Valid @RequestBody RegisterRequest request) {
 
         return userService.saveUser(request);
@@ -52,7 +49,7 @@ public class UserController {
     }
 
     @GetMapping("/search")
-    public List<UserResponse> searchUsers(@RequestParam String username) {
+    public List<UserResponse> searchUsers(@RequestParam String username) {//soru işaretinden sonraki username bilgisini koparıp alır ve userService.searchUsers("ali") şeklinde beyne iletir.
 
         return userService.searchUsers(username);
     }
@@ -88,14 +85,14 @@ public class UserController {
     }
 
     @GetMapping("/{userId}")
-    public ProfileResponse getProfile(@PathVariable String userId) {
+    public ProfileResponse getProfile(@PathVariable String userId) {//urlden incelenecek kişinin idsini alır
 
         return userService.getProfile(userId);
 
     }
 
-    @PostMapping("/verify-email")
-    public MessageResponse verifyEmail(@Valid @RequestBody VerifyEmailRequest request) {
+    @PostMapping("/verify-email")//arayüzde kullanıcı maile gelen kodu girip onaylaya bastığında buraya post isteği gelir
+    public MessageResponse verifyEmail(@Valid @RequestBody VerifyEmailRequest request) {//VerifyEmailRequest kutusunun içindeki e-posta ve kod alınarak userService.verifyCode metoduna yollanır.
 
         userService.verifyCode(request.getEmail(), request.getCode());
         return new MessageResponse(LocalDateTime.now(), "Email verified successfully.");

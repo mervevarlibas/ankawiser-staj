@@ -13,8 +13,8 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
-@Component// bu sınıfı otomatik oluştur
-public class JwtAuthenticationFilter extends OncePerRequestFilter {
+@Component// bu sınıfı otomatik oluştur hafızada bir nesne (bean) olarak hazır tut
+public class JwtAuthenticationFilter extends OncePerRequestFilter {//Frontend'den gelen her bir HTTP isteği (GET, POST vs.) için bu kodu sadece ve sadece bir kez çalıştır
 
     private final JwtService jwtService;
 
@@ -23,25 +23,25 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     }
 
     @Override
-    protected void doFilterInternal(//bu metod her istekte otomatik çağrılır.
+    protected void doFilterInternal(//bu metod her istekte otomatik çağrılır.istek sunucuya girmeden hemen arandığı yer
             HttpServletRequest request,//gelen istek
             HttpServletResponse response,//dönecek cevap
             FilterChain filterChain)//Sıradaki filtreye geç. veya controllera devam et
             throws ServletException, IOException {
 
-        String authorizationHeader =//http isteğinin authorization başlığını getirir.
+        String authorizationHeader =//http isteğinin authorization header i getirir.
                 request.getHeader("Authorization");
 
         if (authorizationHeader == null
                 || !authorizationHeader.startsWith("Bearer ")) {//tokenin beklediğimiz formatta olup olmadığını kontrol eder(Bearer TOKEN)
 
             filterChain.doFilter(request, response);
-            return;
+            return;//kimlik yok doğrulayamaz, içeri girer fakat kimliksiz
         }
 
         String token = authorizationHeader.substring(7);//bearer kısmını ayırır
 
-        if (jwtService.isTokenValid(token)) {
+        if (jwtService.isTokenValid(token)) {//Saf token'ı alır ve JwtService'teki o imza kontrol metoduna yollar.true ise aşağı gerçekleşir
 
             String userId = jwtService.extractUserId(token);//Bu artıklogin olan kullanıcınınid'si.
 
@@ -52,11 +52,11 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                             List.of()
                     );
 
-            SecurityContextHolder//bu isteği yapan kullanıcı doğrulandı ve kimliği bu > userId
+            SecurityContextHolder//bu isteği yapan kullanıcı doğrulandı ve kimliği bu > userId.authentication.getName() metodu, tam olarak buradaki çivilenmiş kimliğe ulaşıp o ID'yi alıyor
                     .getContext()
                     .setAuthentication(authentication);
         }
 
-        filterChain.doFilter(request, response);
+        filterChain.doFilter(request, response);//bariyeri kaldırır ve onaylanmış, kimliği tespit edilmiş bu isteği hedefine (Controller'a) gönderir.
     }
 }

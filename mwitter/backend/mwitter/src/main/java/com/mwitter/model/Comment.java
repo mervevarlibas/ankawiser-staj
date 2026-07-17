@@ -11,7 +11,7 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-@Document(collection = "comments")
+@Document(collection = "comments")//mongodbde yeni koleksiyon olarak
 public class Comment {
 @Id
     private String id;//her yorumun benzersiz kimliği

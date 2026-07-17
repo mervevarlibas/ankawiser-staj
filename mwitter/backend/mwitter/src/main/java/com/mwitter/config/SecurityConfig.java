@@ -34,9 +34,9 @@ public class SecurityConfig {
                  .cors(cors ->//5500 portundan gelen isteklere izin ver.
                 cors.configurationSource(corsConfigurationSource())
         )
-        .csrf(csrf -> csrf.disable())
+        .csrf(csrf -> csrf.disable())//CSRF (Siteler Arası İstek Sahtekarlığı), eski tip (Session/Cookie kullanan) web siteleri için bir kalkanıdır. Biz JWT (Token) kullandığımız için bu eski kalkanı kapatıyoruz; aksi takdirde frontend'den gelen tüm POST istekleri reddedilirdi.
                 .sessionManagement(session
-                        -> session.sessionCreationPolicy(
+                        -> session.sessionCreationPolicy(//Sunucu kimseyi hatırlamaz
                         SessionCreationPolicy.STATELESS//sunucuda klasik oturum saklanmaz.her istek kendi jwtsi ile kimliğini kanıtlar
                 )
                 )
@@ -46,9 +46,10 @@ public class SecurityConfig {
                         "/users/login", //token isteme
                         "/users/verify-email",
                         "/users/resend-verification-code"
+                        , "/ws/**"
                 ).permitAll()
                 .requestMatchers(//gönderileri ve profilleri görüntüleme şimdilik!!!!! herkese açık
-                        HttpMethod.GET,
+                        HttpMethod.GET,//Sadece okuma (GET) işlemlerine izin verilmiş.
                         "/posts/**",
                         "/users/**"
                 ).permitAll()
@@ -80,7 +81,7 @@ public CorsConfigurationSource corsConfigurationSource() {
             "OPTIONS"
     ));
 
-    configuration.setAllowedHeaders(List.of(//ağağıdaki başlıkları göndermesine izin verir
+    configuration.setAllowedHeaders(List.of(//ağağıdaki başlıkları göndermesine izin verir.frontendin bize token de json gönderebilmesi için izin verir
             "Authorization",
             "Content-Type"
     ));
