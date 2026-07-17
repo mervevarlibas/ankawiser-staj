@@ -20,6 +20,31 @@ $(document).ready(function() { //sayfa tamamen yüklendiğinde bu kod çalışs�
             $("#sidebarAvatarLetter").text(firstLetter); //profil ikonuna harfi koyuyor
             $("#composerAvatarLetter").text(firstLetter); //post yazdığımız yerdeki avatar harfi
 
+            function loadUnreadConversationCount() {
+                $.ajax({
+                    url: "http://localhost:8080/messages/conversations",
+                    method: "GET",
+                    headers: {
+                        Authorization: "Bearer " + token
+                    },
+                    success: function(conversations) {
+                        const unreadConversationCount = conversations.filter(function(conversation) {
+                            return conversation.unreadCount > 0;
+                        }).length;
+
+                        const badge = $("#unreadConversationBadge");
+                        if (unreadConversationCount > 0) {
+                            badge.text(unreadConversationCount).prop("hidden", false);
+                        } else {
+                            badge.text("").prop("hidden", true);
+                        }
+                    }
+                });
+            }
+
+            loadUnreadConversationCount();
+            setInterval(loadUnreadConversationCount, 10000);
+
             $("#content").on("input", function() {
                 const length = $(this).val().length;
                 $("#characterCount").text(length + " / 200");

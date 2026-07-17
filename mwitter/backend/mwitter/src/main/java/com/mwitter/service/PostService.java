@@ -27,6 +27,8 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class PostService {
 
+    private static final int TIMELINE_LIMIT = 50;//listenin yalnızca ilk 50 elemanını alıyor.sayfa yenilendiğinde backendden tekrar oluşturulur
+
     private final PostRepository postRepository;//gönderileri kaydetmek,bulmak için
     private final UserRepository userRepository;//gönderiyi atan kişinin bilgilerini almak için
     private final RepostRepository repostRepository;//retweet işlemleri için
@@ -154,7 +156,9 @@ public class PostService {
 
         addRepostResponses(responses, repostRepository.findByUserIdIn(timelineUserIds), userId);
         sortByDisplayDate(responses);
-        return responses;
+        return responses.stream()
+                .limit(TIMELINE_LIMIT)
+                .toList();
     }
 
     public PostResponse getPostByIdForResponse(String postId, String currentUserId) {

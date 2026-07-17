@@ -614,6 +614,24 @@ body.dark-mode textarea::placeholder { color: #8899a6; }
     font-size: 24px;
 }
 
+.nav-unread-badge {
+    min-width: 22px;
+    height: 22px;
+    margin-left: auto;
+    display: grid;
+    place-items: center;
+    padding: 0 6px;
+    border-radius: 999px;
+    background: var(--rose-main);
+    color: #fff;
+    font-size: 11px;
+    font-weight: 800;
+}
+
+.nav-unread-badge[hidden] {
+    display: none;
+}
+
 .sidebar-user-card {
     margin-top: auto;
     display: flex;
