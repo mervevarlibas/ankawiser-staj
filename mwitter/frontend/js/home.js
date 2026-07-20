@@ -61,7 +61,7 @@ $(document).ready(function() { //sayfa tamamen yüklendiğinde bu kod çalışs�
             $("#timeline").on("click", ".post", function(e) {
 
                 // butonlara (beğeni, yorum) basıldıysa yönlendirme yapma
-                if ($(e.target).closest("button").length) {
+                if ($(e.target).closest("button, a").length) {
                     return;
                 }
 
@@ -437,7 +437,7 @@ function loadTimeline() {//timeline i yükleyen fonksiyon
 
                         </div>
 
-                        <p class="post-content">${post.content}</p>
+                        <p class="post-content">${renderMentionedContent(post.content, post.mentions)}</p>
 
                         <div class="post-actions">
 
@@ -542,7 +542,7 @@ function loadComments(postId) {//seçilen postun yorumlarını getirir
                                     data-post-id="${postId}"
                                     data-comment-id="${comment.id}">Sil</button>
                             ` : ""}
-                            <p>${comment.content}</p>
+                            <p>${renderMentionedContent(comment.content, comment.mentions)}</p>
                         </div>
                     `);
                 }

@@ -1,5 +1,6 @@
 package com.mwitter.dto; //Bu DTO frontend’e gönderilen yorum cevabıdır.
 import java.time.LocalDateTime;
+import java.util.List;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -20,4 +21,6 @@ private String id;
     private String userId;
 
     private String username;//frontend yorum sahibinin adını göstereceği için username ekledim
+
+    private List<MentionResponse> mentions;//içeriğinde var olan kullanıcı mentionlarının listesi frontend'e böyle gidecek
 }

@@ -27,25 +27,31 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class PostService {
 
-    private static final int TIMELINE_LIMIT = 50;//listenin yalnızca ilk 50 elemanını alıyor.sayfa yenilendiğinde backendden tekrar oluşturulur
+    private static final int TIMELINE_LIMIT = 50;// listenin yalnızca ilk 50 elemanını alıyor.sayfa yenilendiğinde
+                                                 // backendden tekrar oluşturulurdden tekrar oluşturulur
 
-    private final PostRepository postRepository;//gönderileri kaydetmek,bulmak için
-    private final UserRepository userRepository;//gönderiyi atan kişinin bilgilerini almak için
-    private final RepostRepository repostRepository;//retweet işlemleri için
-    private final CommentRepository commentRepository;//yorumları yönetmek için
+    private final PostRepository postRepository;// gönderileri kaydetmek,bulmak için
+    private final UserRepository userRepository;// gönderiyi atan kişinin bilgilerini almak için
+    private final RepostRepository repostRepository;// retweet işlemleri için
+    private final CommentRepository commentRepository;// yorumları yönetmek için
+    private final MentionService mentionService;// post metnindeki geçerli @kullanıcı etiketlerini bulmak için
+    private final NotificationService notificationService;//Beğeni, repost ve post mention olaylarını kalıcı kayıt + WebSocket bildirimiyle bağlar.
 
     public PostResponse createPost(CreatePostRequest request, String userId) {
-        User user = getUserById(userId);//userid ile gelen kullanıcıyı bulur
+        User user = getUserById(userId);// userid ile gelen kullanıcıyı bulur
         Post post = new Post();
-        post.setContent(request.getContent());//gelen metinleri alır
+        post.setContent(request.getContent());// gelen metinleri alır
         post.setCreatedAt(LocalDateTime.now());
         post.setUserId(user.getId());
 
-        Post savedPost = postRepository.save(post);//yeni bir post oluşturup vtabanına kaydeder
-        return convertToResponse(savedPost, user.getUsername(), user.getId());//frontend ekrana çizbilsin diye güvenli format
+        Post savedPost = postRepository.save(post);// yeni bir post oluşturup vtabanına kaydeder
+        mentionService.findValidMentions(savedPost.getContent()).forEach(mention -> //MentionService post metnindeki gerçek kullanıcıları bulur ve tekrarlanan adları eler.
+                notificationService.notify(mention.getUserId(), userId, "MENTION", savedPost.getId()));//Her etiketleneni alıcı, post sahibini aktör yapıp ilgili post id'siyle bildirim üretir.
+        return convertToResponse(savedPost, user.getUsername(), user.getId());// frontend ekrana çizbilsin diye güvenli
+                                                                              // format
     }
 
-    public List<PostResponse> getAllPosts() {//Veritabanından tarihe göre sıralı tüm postları çeker.
+    public List<PostResponse> getAllPosts() {// Veritabanından tarihe göre sıralı tüm postları çeker.
         List<Post> posts = postRepository.findAllByOrderByCreatedAtDesc();
         Map<String, User> usersById = getUsersByIdForPosts(posts);
         List<PostResponse> responses = new ArrayList<>();
@@ -61,7 +67,8 @@ public class PostService {
         return responses;
     }
 
-    public List<PostResponse> getPostsByUserId(String userId, String currentUserId) {//birinin profiline girdiğimizde çalışır
+    public List<PostResponse> getPostsByUserId(String userId, String currentUserId) {// birinin profiline girdiğimizde
+                                                                                     // çalışır
         User user = getUserById(userId);
         List<Post> posts = postRepository.findByUserIdOrderByCreatedAtDesc(userId);
         List<PostResponse> responses = new ArrayList<>();
@@ -79,12 +86,13 @@ public class PostService {
         Post post = getPostById(postId);
         getUserById(userId);
 
-        if (post.getLikedUserIds().contains(userId)) {//listede var mı diye bakar yoksa ekler
+        if (post.getLikedUserIds().contains(userId)) {// listede var mı diye bakar yoksa ekler
             throw new RuntimeException("You already liked this post.");
         }
 
         post.getLikedUserIds().add(userId);
         postRepository.save(post);
+        notificationService.notify(post.getUserId(), userId, "LIKE", postId);//Post sahibini alıcı, beğenen JWT kullanıcısını aktör yaparak LIKE bildirimi üretir.
     }
 
     public void unlikePost(String postId, String userId) {
@@ -100,7 +108,7 @@ public class PostService {
     }
 
     public void repostPost(String postId, String userId) {
-        getPostById(postId);
+        Post post = getPostById(postId);
         getUserById(userId);
 
         if (repostRepository.findByUserIdAndPostId(userId, postId).isPresent()) {
@@ -112,6 +120,7 @@ public class PostService {
         repost.setPostId(postId);
         repost.setCreatedAt(LocalDateTime.now());
         repostRepository.save(repost);
+        notificationService.notify(post.getUserId(), userId, "REPOST", postId);//Post sahibini alıcı, repost yapanı aktör yaparak REPOST bildirimi üretir.
     }
 
     public void undoRepost(String postId, String userId) {
@@ -126,9 +135,9 @@ public class PostService {
     }
 
     public void deletePost(String postId, String userId) {
-        Post post = getPostById(postId);//postu bulur
+        Post post = getPostById(postId);// postu bulur
 
-        if (!post.getUserId().equals(userId)) {//postu silmek isteyen lişi ile postun sahibi aynı mı
+        if (!post.getUserId().equals(userId)) {// postu silmek isteyen lişi ile postun sahibi aynı mı
             throw new RuntimeException("You can only delete your own post.");
         }
 
@@ -139,7 +148,8 @@ public class PostService {
 
     public List<PostResponse> getTimeline(String userId) {
         User user = getUserById(userId);
-        List<String> timelineUserIds = new ArrayList<>(user.getFollowing());//user servisine gidip takip ettiklerimizin idsini listeye ekler
+        List<String> timelineUserIds = new ArrayList<>(user.getFollowing());// user servisine gidip takip ettiklerimizin
+                                                                            // idsini listeye ekler
         timelineUserIds.add(user.getId());
 
         List<Post> posts = postRepository.findByUserIdInOrderByCreatedAtDesc(timelineUserIds);
@@ -174,15 +184,18 @@ public class PostService {
         response.setCreatedAt(post.getCreatedAt());
         response.setUserId(post.getUserId());
         response.setUsername(username);
-        response.setLikeCount(post.getLikedUserIds().size());//beğeni sayısı
+        response.setLikeCount(post.getLikedUserIds().size());// beğeni sayısı
         response.setLikedByCurrentUser(
-                currentUserId != null && post.getLikedUserIds().contains(currentUserId)//kalp ikonunun boş olup olmadığını frontende göndermek için
+                currentUserId != null && post.getLikedUserIds().contains(currentUserId)// kalp ikonunun boş olup
+                                                                                       // olmadığını frontende göndermek
+                                                                                       // için
         );
         response.setRepostCount((int) repostRepository.countByPostId(post.getId()));
         response.setRepostedByCurrentUser(
                 currentUserId != null
-                && repostRepository.findByUserIdAndPostId(currentUserId, post.getId()).isPresent()
-        );
+                        && repostRepository.findByUserIdAndPostId(currentUserId, post.getId()).isPresent());
+        response.setMentions(mentionService.findValidMentions(post.getContent()));// response dönüşümünde post metni
+                                                                                  // analiz ediliyor
         return response;
     }
 
@@ -241,7 +254,8 @@ public class PostService {
         }
 
         Map<String, User> usersById = new HashMap<>();
-        for (User user : userRepository.findAllById(userIds)) {//mongodbye sadece bir kere gidip postları yazanları tek seferde alıyoruz
+        for (User user : userRepository.findAllById(userIds)) {// mongodbye sadece bir kere gidip postları yazanları tek
+                                                               // seferde alıyoruz
             usersById.put(user.getId(), user);
         }
         return usersById;
@@ -254,12 +268,13 @@ public class PostService {
 
     private void sortByDisplayDate(List<PostResponse> responses) {
         responses.sort(
-                Comparator.comparing(//eğer bu veri bir repost ise sıralamayı o tarihe göre yap,postsa oluşturma tarihine göre
+                Comparator.comparing(// eğer bu veri bir repost ise sıralamayı o tarihe göre yap,postsa oluşturma
+                                     // tarihine göre
                         (PostResponse response) -> response.isRepost()
                                 ? response.getRepostedAt()
                                 : response.getCreatedAt(),
-                        Comparator.nullsLast(Comparator.naturalOrder())
-                ).reversed()//en yeni en üstte olacak şekilde ters çevir
+                        Comparator.nullsLast(Comparator.naturalOrder())).reversed()// en yeni en üstte olacak şekilde
+                                                                                   // ters çevir
         );
     }
 }

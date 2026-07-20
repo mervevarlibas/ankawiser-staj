@@ -22,6 +22,9 @@ public class CommentService {
 
     private final PostService postService;//yorum yapılacak postun var olup olmadığını öğrenmek için
 
+    private final MentionService mentionService;//yorum metnindeki geçerli @kullanıcı etiketlerini bulmak için
+    private final NotificationService notificationService;//Yorum ve yorum içindeki mention olaylarını post sahibinin/etiketlenenin WebSocket kanalına bağlar.
+
     public CommentResponse createComment(
         CreateCommentRequest request, //bodyden gelir
         String postId, //urlden gelir
@@ -44,6 +47,10 @@ public class CommentService {
 
     Comment savedComment = commentRepository.save(comment);//savedcomment mongodbye kaydedilmiş yorum
 
+    notificationService.notify(post.getUserId(), userId, "COMMENT", postId);//Post sahibini alıcı, yorumu yapan JWT kullanıcısını aktör yaparak COMMENT bildirimi üretir.
+    mentionService.findValidMentions(savedComment.getContent()).forEach(mention -> //Kaydedilen yorum metnindeki geçerli ve benzersiz kullanıcı etiketlerini bulur.
+            notificationService.notify(mention.getUserId(), userId, "MENTION", postId));//Etiketlenen kullanıcıyı aynı post id'siyle MENTION bildirimine bağlar.
+
     return convertToResponse(savedComment, user.getUsername());//yorum yapanın kullanıcıadını alır
 
 }
@@ -58,7 +65,8 @@ private CommentResponse convertToResponse(//bunları alıp frontend'in anlayaca�
             comment.getCreatedAt(),
             comment.getPostId(),
             comment.getUserId(),
-            username
+            username,
+            mentionService.findValidMentions(comment.getContent())
     );
 }
 public void deleteComment(String postId, String commentId, String userId) {

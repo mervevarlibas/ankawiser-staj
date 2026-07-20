@@ -39,5 +39,65 @@ $(document).ready(function () {//HTML tamamen yüklendikten sonra JavaScript’i
             }
         });
     });
+
+    function closeForgotPasswordModal() {
+        $("#forgotPasswordModal").hide();
+    }
+
+    $("#forgotPasswordLink").click(function (event) {
+        event.preventDefault();
+        $("#forgotPasswordMessage").removeClass("success-message error-message").text("");
+        $("#forgotPasswordEmail").val($("#email").val().trim());
+        $("#forgotPasswordModal").css("display", "flex");
+        $("#forgotPasswordEmail").trigger("focus");
+    });
+
+    $("#closeForgotPasswordModal").click(closeForgotPasswordModal);
+    $("#forgotPasswordModal").click(function (event) {
+        if (event.target === this) closeForgotPasswordModal();
+    });
+    $(document).keydown(function (event) {
+        if (event.key === "Escape") closeForgotPasswordModal();
+    });
+
+    $("#forgotPasswordEmail").keydown(function (event) {
+        if (event.key === "Enter") {
+            event.preventDefault();
+            $("#sendResetLinkButton").trigger("click");
+        }
+    });
+
+    $("#sendResetLinkButton").click(function () {
+        const emailInput = document.getElementById("forgotPasswordEmail");
+        const email = emailInput.value.trim();
+        const button = $(this);
+        const message = $("#forgotPasswordMessage");
+
+        if (!email || !emailInput.checkValidity()) {
+            message.removeClass("success-message").addClass("error-message")
+                .text("Lütfen geçerli bir e-posta adresi gir.");
+            return;
+        }
+
+        button.prop("disabled", true).text("Gönderiliyor...");
+        message.removeClass("success-message error-message").text("");
+        $.ajax({
+            url: "http://localhost:8080/users/forgot-password",
+            method: "POST",
+            contentType: "application/json",
+            data: JSON.stringify({ email: email }),
+            success: function () {
+                message.removeClass("error-message").addClass("success-message")
+                    .text("E-posta kayıtlıysa sıfırlama bağlantısı gönderildi. Gelen kutunu kontrol et.");
+            },
+            error: function () {
+                message.removeClass("success-message").addClass("error-message")
+                    .text("Şu anda bağlantı gönderilemedi. Lütfen daha sonra tekrar dene.");
+            },
+            complete: function () {
+                button.prop("disabled", false).text("Sıfırlama Linki Gönder");
+            }
+        });
+    });
 });
 //JSON.stringify JavaScript nesnesini JSON metnine çeviriyor

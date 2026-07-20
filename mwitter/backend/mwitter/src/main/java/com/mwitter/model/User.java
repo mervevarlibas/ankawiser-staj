@@ -28,4 +28,6 @@ public class User {
     private boolean verified = false; //hesap doğrulandı mı. kullanıcı mail kodu doğru girene kadar false kalacak
     private String verificationCode; //kullanıcıya mailde gönderilen kod
     private LocalDateTime verificationCodeExpiry;//doğrulama kodunun süresi
+    private String resetPasswordToken;//Maildeki ham token'ın SHA-256 özeti burada tutulur; UserRepository token sorgusu bu alana bağlanır.
+    private LocalDateTime resetPasswordTokenExpiry;//Sıfırlama linkinin son kullanım zamanıdır; UserService 15 dakika sonrasını kaydeder.
 }

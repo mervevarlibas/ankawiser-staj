@@ -22,6 +22,8 @@ import com.mwitter.dto.RegisterRequest;
 import com.mwitter.dto.ResendCodeRequest;
 import com.mwitter.dto.UserResponse;
 import com.mwitter.dto.VerifyEmailRequest;
+import com.mwitter.dto.ForgotPasswordRequest;
+import com.mwitter.dto.ResetPasswordRequest;
 import com.mwitter.service.UserService;
 
 import jakarta.validation.Valid;
@@ -114,4 +116,17 @@ public MessageResponse changePassword(
 
     return new MessageResponse(LocalDateTime.now(), "Password changed successfully.");
 }
+
+    @PostMapping("/forgot-password") //Login modalından gelen isteği karşılar; SecurityConfig bu yolu JWT'siz açar.
+    public MessageResponse forgotPassword(@Valid @RequestBody ForgotPasswordRequest request) {//@Valid, DTO içindeki e-posta kurallarını service çağrılmadan çalıştırır.
+        userService.requestPasswordReset(request.getEmail());//Doğrulanan email'i token üretme, kaydetme ve mail gönderme işlemleri için UserService'e yollar.
+        return new MessageResponse(LocalDateTime.now(),
+                "If the email is registered, a password reset link has been sent.");//Email var/yok ayrımı yapmadan aynı cevabı vererek hesapların keşfedilmesini önler.
+    }
+
+    @PostMapping("/reset-password") //Reset sayfasından gelen isteği karşılar; SecurityConfig bu yolu JWT'siz açar.
+    public MessageResponse resetPassword(@Valid @RequestBody ResetPasswordRequest request) {//Token boşluğu ve şifre uzunluğunu DTO anotasyonlarıyla doğrular.
+        userService.resetPassword(request.getToken(), request.getNewPassword());//Token kontrolü ve BCrypt şifre güncellemesi için alanları UserService'e bağlar.
+        return new MessageResponse(LocalDateTime.now(), "Password reset successfully.");//Frontend'in login sayfasına yönlendirme yapabilmesi için başarı cevabı döner.
+    }
 }

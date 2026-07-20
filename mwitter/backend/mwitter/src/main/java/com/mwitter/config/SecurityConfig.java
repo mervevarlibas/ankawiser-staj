@@ -46,6 +46,8 @@ public class SecurityConfig {
                         "/users/login", //token isteme
                         "/users/verify-email",
                         "/users/resend-verification-code"
+                        , "/users/forgot-password"//Şifresini unutan kullanıcıda JWT bulunamayacağı için reset maili istemeyi girişsiz erişime açar.
+                        , "/users/reset-password"//Mail linkinden gelen kullanıcının JWT'si olmadığı için yeni şifre gönderme endpoint'ini girişsiz erişime açar.
                         , "/ws/**"
                 ).permitAll()
                 .requestMatchers(//gönderileri ve profilleri görüntüleme şimdilik!!!!! herkese açık

@@ -38,7 +38,7 @@ $(document).ready(function() {
                     </div>
 
                     <p class="post-content">
-                        ${post.content}
+                        ${renderMentionedContent(post.content, post.mentions)}
                     </p>
 
                     <div class="post-actions">
@@ -223,7 +223,7 @@ function loadComments(postId) {
                                     data-post-id="${postId}"
                                     data-comment-id="${comment.id}">Sil</button>
                             ` : ""}
-                            <p>${comment.content}</p>
+                            <p>${renderMentionedContent(comment.content, comment.mentions)}</p>
                         </div>
                     `);
                 }

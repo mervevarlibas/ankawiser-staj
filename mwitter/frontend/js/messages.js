@@ -159,21 +159,11 @@ $(document).ready(function () {
     }
 
     function connectWebSocket() {
-        stompClient = new StompJs.Client({
-            webSocketFactory: function () {
-                return new SockJS(apiBase + "/ws");
-            },
-            connectHeaders: { Authorization: "Bearer " + token },
-            reconnectDelay: 5000,
-            heartbeatIncoming: 10000,
-            heartbeatOutgoing: 10000,
-            debug: function () {}
-        });
-
-        stompClient.onConnect = function () {
+        stompClient = window.MwitterSocket;
+        const subscribeToMessages = function () {
             $("#connectionStatus").text("Bağlı").addClass("connected");
-            stompClient.subscribe("/user/queue/messages", function (frame) {
-                const message = JSON.parse(frame.body);
+        };
+        stompClient.subscribe("/user/queue/messages", function (message) {
                 const belongsToOpenConversation = selectedUserId
                     && (message.senderId === selectedUserId || message.receiverId === selectedUserId);
 
@@ -182,22 +172,16 @@ $(document).ready(function () {
                     scrollToLatest();
                 }
                 loadConversationList();
-            });
-        };
-
-        stompClient.onWebSocketClose = function () {
+        });
+        if (stompClient.connected) subscribeToMessages();
+        window.addEventListener("mwitter:websocket-connected", subscribeToMessages);
+        window.addEventListener("mwitter:websocket-disconnected", function () {
             $("#connectionStatus").text("Yeniden bağlanıyor...").removeClass("connected");
-        };
-
-        stompClient.onStompError = function () {
+        });
+        window.addEventListener("mwitter:websocket-error", function () {
             $("#connectionStatus").text("Bağlantı hatası").removeClass("connected");
-        };
-
-        stompClient.onWebSocketError = function () {
-            $("#connectionStatus").text("Bağlantı kurulamadı").removeClass("connected");
-        };
-
-        stompClient.activate();
+        });
+        stompClient.connect();
     }
 
     $("#conversationList").on("click", ".conversation-item", function () {

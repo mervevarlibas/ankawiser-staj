@@ -1,6 +1,7 @@
 package com.mwitter.dto;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -36,4 +37,6 @@ public class PostResponse {
     private String repostedByUsername;
 
     private LocalDateTime repostedAt;
+
+    private List<MentionResponse> mentions;
 }

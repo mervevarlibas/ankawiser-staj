@@ -4,9 +4,15 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 
 import java.util.List;
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.security.SecureRandom;
+import java.util.Base64;
 
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.beans.factory.annotation.Value;
 
 import com.mwitter.dto.ChangePasswordRequest;
 import com.mwitter.dto.LoginRequest;
@@ -24,11 +30,17 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor//final değişkenleri için otomatik bir kurucu oluşturur
 public class UserService {
 
+    private static final SecureRandom SECURE_RANDOM = new SecureRandom();//Reset linki için Math.random yerine kriptografik olarak güçlü rastgele bayt üretir.
+
     private final EmailService emailService;//doğrulama mailleri atmak için
     private final UserRepository userRepository; // bu sınıfın calısabilmesi için userrepository sınıfını kullanıyoruz.
                                                  // final ile değiştirilemez hale getiriyoruz.
     private final BCryptPasswordEncoder passwordEncoder;//şifreleri karmaşık hale getirir güvenlik için
     private final JwtService jwtService;//giriş yapıldığında token basar
+    private final NotificationService notificationService;//Başarılı follow işleminden sonra NotificationService üzerinden alıcıya bildirim üretir.
+
+    @Value("${app.frontend-base-url:http://127.0.0.1:5500}") //application.properties'teki frontend adresini Spring üzerinden bu alana bağlar.
+    private String frontendBaseUrl;//Maildeki reset-password.html bağlantısının domain ve klasör başlangıcını tutar.
 
     public UserResponse saveUser(RegisterRequest request) { // dışarıdan doğrudan user gelmiyor.kayıt için gerekli
                                                             // alanları taşıyan registerrequest geliyor
@@ -155,6 +167,8 @@ public class UserService {
         userRepository.save(followerUser);
         userRepository.save(followingUser);
 
+        notificationService.notify(followingId, followerId, "FOLLOW", null);//Takip edileni alıcı, takip edeni aktör yapar; FOLLOW posta bağlı olmadığı için postId null gider.
+
     }
 
     public void unfollowUser(String followerId, String followingId) {
@@ -264,10 +278,55 @@ public void changePassword(String userId, ChangePasswordRequest request) {
 
     String hashedPassword = passwordEncoder.encode(request.getNewPassword());
     user.setPassword(hashedPassword);
+    user.setResetPasswordToken(null);//Profil içinden şifre değişince önceden alınmış reset linkini geçersiz kılar.
+    user.setResetPasswordTokenExpiry(null);//İptal edilen reset linkinin son kullanım zamanını temizler.
 
     userRepository.save(user);
 }
-private List<User> getValidUsersAndCleanup(User owner, List<String> ids, boolean isFollowingList) {
+
+public void requestPasswordReset(String email) {//UserController'daki forgot-password endpoint'inden gelen e-posta için reset akışını başlatır.
+    userRepository.findByEmail(email.trim()).ifPresent(user -> {//email veritabanında yoksa hiçbir şey olmuz, hata da fırlamaz=ifpresent
+        byte[] randomBytes = new byte[32];//Tahmin edilmesi pratikte mümkün olmayan 256 bit token için boş bayt dizisi oluşturur.
+        SECURE_RANDOM.nextBytes(randomBytes);//SecureRandom diziyi kriptografik olarak güçlü rastgele değerlerle doldurur.
+        String rawToken = Base64.getUrlEncoder().withoutPadding().encodeToString(randomBytes);//Baytları URL'de sorun çıkarmayan karakterlere dönüştürür.
+
+        user.setResetPasswordToken(hashResetToken(rawToken));//Veritabanı sızsa bile link kullanılamasın diye ham token yerine yalnızca SHA-256 hashini saklar.
+        user.setResetPasswordTokenExpiry(LocalDateTime.now().plusMinutes(15));//Linkin backend tarafından kabul edileceği son zamanı 15 dakika sonrası yapar.
+        userRepository.save(user);//Token özeti ve süreyi User koleksiyonunda kalıcı hale getirir.
+
+        String resetLink = frontendBaseUrl + "/reset-password.html?token=" + rawToken;//linke hashlenmemiş token koyuyor.çünkü kullanıcı linke tıklayınca frontend bu ham token'ı backend'e gönderecek, backend onu tekrar hash'leyip veritabanındaki hash ile karşılaştıracak
+        emailService.sendPasswordResetMail(user.getEmail(), resetLink);//Hazırlanan linki EmailService üzerinden kullanıcının kayıtlı adresine gönderir.
+    });
+}
+
+public void resetPassword(String rawToken, String newPassword) {//ResetPasswordRequest içindeki token ve yeni şifreyi doğrulayıp User kaydını günceller.
+    User user = userRepository.findByResetPasswordToken(hashResetToken(rawToken))
+            .orElseThrow(() -> new RuntimeException("Invalid or expired reset link."));//Ham token tekrar hashlenir ve UserRepository üzerinden aynı hashe sahip kullanıcı aranır.
+
+    if (user.getResetPasswordTokenExpiry() == null
+            || !LocalDateTime.now().isBefore(user.getResetPasswordTokenExpiry())) {//Son kullanım zamanı yoksa veya geçmişse linki reddeder.
+        user.setResetPasswordToken(null);//Süresi dolan token özetini temizleyerek tekrar sorgulanmasını engeller.
+        user.setResetPasswordTokenExpiry(null);//Süresi dolan linkin tarih bilgisini User kaydından kaldırır.
+        userRepository.save(user);//Süresi dolan token temizliğini MongoDB'ye kaydeder.
+        throw new RuntimeException("Reset link has expired. Please request a new one.");//GlobalExceptionHandler üzerinden frontend'e kontrollü hata gönderir.
+    }
+
+    user.setPassword(passwordEncoder.encode(newPassword));//Yeni şifreyi düz metin saklamadan BCrypt ile hashleyip User.password alanına yazar.
+    user.setResetPasswordToken(null);//Başarılı kullanımdan sonra token'ı tek kullanımlık hale getirmek için siler.
+    user.setResetPasswordTokenExpiry(null);//Kullanılmış token'ın son kullanım zamanını temizler.
+    userRepository.save(user);//Yeni şifreyi ve token temizliğini aynı User kaydında MongoDB'ye yazar.
+}
+
+private String hashResetToken(String rawToken) {//Mailde taşınan ham token'ı MongoDB'de saklanan sabit uzunluktaki özete dönüştürür.
+    try {
+        byte[] digest = MessageDigest.getInstance("SHA-256")
+                .digest(rawToken.getBytes(StandardCharsets.UTF_8));//Token metnini UTF-8 baytlarına çevirip SHA-256 ile tek yönlü hashler.
+        return Base64.getEncoder().encodeToString(digest);//Hash baytlarını User.resetPasswordToken alanında saklanabilecek metne çevirir.
+    } catch (NoSuchAlgorithmException exception) {
+        throw new IllegalStateException("SHA-256 is not available.", exception);//JVM'de zorunlu algoritma yoksa uygulama yapılandırma hatasını bildirir.
+    }
+}
+private List<User> getValidUsersAndCleanup(User owner, List<String> ids, boolean isFollowingList) {//silinmiş kullanıcıları takip listesinden temizleme
 
     List<User> foundUsers = userRepository.findAllById(ids);//mongodbden bu idlere sahip kullanıcıları getirtir
 

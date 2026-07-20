@@ -322,7 +322,7 @@ $(document).ready(function() {
     $("#profilePosts").on("click", ".post", function(e) {
 
         // butonlara basıldıysa yönlendirme yapma
-        if ($(e.target).closest("button").length) {
+        if ($(e.target).closest("button, a").length) {
             return;
         }
 
@@ -432,7 +432,7 @@ function loadUserPosts(userId) { //postları getirme
         </div>
 
         <p class="post-content">
-            ${post.content}
+            ${renderMentionedContent(post.content, post.mentions)}
         </p>
 
         <div class="post-actions">
@@ -595,7 +595,7 @@ function loadComments(postId) {
             data-post-id="${postId}"
             data-comment-id="${comment.id}">Sil</button>
     ` : ""}
-    <p>${comment.content}</p> 
+    <p>${renderMentionedContent(comment.content, comment.mentions)}</p> 
 </div>
     `);
                 }

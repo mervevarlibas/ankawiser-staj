@@ -11,6 +11,10 @@ public interface UserRepository extends MongoRepository<User, String> {//user mo
 
     Optional<User> findByUsername(String username);//giriş yapma işleminde kullanıyoruz
 
+    Optional<User> findByUsernameIgnoreCase(String username);//etikette yazılan kullanıcı adını büyük/küçük harf duyarsız bulur
+
+    Optional<User> findByResetPasswordToken(String resetPasswordToken);//Reset linkinden gelen token hash'ine sahip User kaydını MongoDB'de bulur.
+
     List<User> findByUsernameContainingIgnoreCase(String username);//kullanıcı adının içinde geçenleri liste olarak getir.
 
 }

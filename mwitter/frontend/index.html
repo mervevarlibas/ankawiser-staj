@@ -39,6 +39,11 @@
                         <span id="unreadConversationBadge" class="nav-unread-badge" hidden></span>
                     </a>
 
+                    <a href="notifications.html" class="nav-item">
+                        <span class="nav-icon">🔔</span><span>Bildirimler</span>
+                        <span id="notificationBadge" class="nav-unread-badge" hidden>0</span>
+                    </a>
+
                     <a href="#" id="profileLink" class="nav-item">
                         <span class="nav-icon">♡</span>
                         <span>Profil</span>
@@ -191,6 +196,11 @@
     </div>
 
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@stomp/stompjs@7/bundles/stomp.umd.min.js"></script>
+    <script src="js/websocket-client.js"></script>
+    <script src="js/notifications-badge.js"></script>
+    <script src="js/mentions.js"></script>
     <script src="js/home.js"></script>
 
 </body>
