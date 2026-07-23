@@ -2,7 +2,7 @@ package com.mwitter.dto;
 
 import java.time.Instant;
 
-public record AdminMetricsResponse(
+public record AdminMetricsResponse(//değerlerin json olarak hazırlanması
         Instant measuredAt,
         String status,
         String databaseStatus,

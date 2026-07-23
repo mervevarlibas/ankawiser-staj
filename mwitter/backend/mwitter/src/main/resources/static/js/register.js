@@ -60,7 +60,8 @@ $(document).ready(function() {
             success: function() {
 
                 registeredEmail = email;
-                $("#message")
+                $("#message").text("");
+                $("#verifyMessage")
                     .removeClass("error-message")
                     .addClass("success-message")
                     .text("Hesabın oluşturuldu. Mailine gelen kodu gir."); //logine atmak yerine doğrulama bölümüne
