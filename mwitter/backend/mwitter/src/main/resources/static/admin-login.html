@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <meta name="theme-color" content="#7e2949">
+    <meta name="robots" content="noindex, nofollow">
+    <link rel="manifest" href="/manifest.webmanifest">
+    <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">
+    <title>Mwitter Yönetim - Giriş</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="/css/admin.css">
+    <script src="/js/theme.js" defer></script>
+    <script src="/js/pwa.js" defer></script>
+    <script src="/js/admin-login.js" defer></script>
+</head>
+<body class="admin-login-page">
+    <button type="button" id="themeToggle" class="theme-toggle">☾ Karanlık Mod</button>
+    <main class="admin-login-shell">
+        <section class="admin-login-card">
+            <img src="/icons/apple-touch-icon.png" alt="" width="72" height="72">
+            <p class="admin-kicker">Mwitter Operasyon</p>
+            <h1>Yönetici girişi</h1>
+            <p class="admin-login-copy">Sunucu sağlığını ve uygulama kullanımını güvenli panelden izle.</p>
+            <form id="adminLoginForm" class="auth-form">
+                <label for="email">Yönetici e-postası</label>
+                <input id="email" type="email" autocomplete="username" required>
+                <label for="password">Şifre</label>
+                <input id="password" type="password" autocomplete="current-password" required>
+                <button id="adminLoginButton" type="submit" class="primary-button">Panele gir</button>
+                <p id="message" class="form-message" aria-live="polite"></p>
+            </form>
+            <a class="admin-back-link" href="/login.html">← Kullanıcı girişine dön</a>
+        </section>
+    </main>
+</body>
+</html>

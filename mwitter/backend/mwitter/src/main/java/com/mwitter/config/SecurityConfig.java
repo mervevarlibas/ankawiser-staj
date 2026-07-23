@@ -5,7 +5,6 @@ import java.util.List;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
-import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
@@ -42,6 +41,8 @@ public class SecurityConfig {
                 )
                 )
                 .authorizeHttpRequests(auth -> auth//hangi endpointlere kim girebilir
+                .requestMatchers("/admin/**").hasRole("ADMIN")
+                .requestMatchers("/actuator/**").denyAll()
                 .requestMatchers(
                         "/", "/*.html", "/css/**", "/js/**", "/images/**",
                         "/icons/**", "/manifest.webmanifest", "/sw.js"
@@ -62,7 +63,7 @@ public class SecurityConfig {
                 ).permitAll()
                 .anyRequest().authenticated()//bunlar dışındaki istekler geçerli jwt taşınmasını ister
                 )
-                .httpBasic(Customizer.withDefaults())
+                .httpBasic(httpBasic -> httpBasic.disable())
                 .addFilterBefore(//bu filtre controllerdan önce çalışır. görevi headerdaki authorization bilgisni okumak
                         jwtAuthenticationFilter,
                         UsernamePasswordAuthenticationFilter.class

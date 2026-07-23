@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.util.List;
 
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
@@ -12,14 +13,18 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import com.mwitter.model.Role;
+import com.mwitter.repository.UserRepository;
 
 @Component// bu sınıfı otomatik oluştur hafızada bir nesne (bean) olarak hazır tut
 public class JwtAuthenticationFilter extends OncePerRequestFilter {//Frontend'den gelen her bir HTTP isteği (GET, POST vs.) için bu kodu sadece ve sadece bir kez çalıştır
 
     private final JwtService jwtService;
+    private final UserRepository userRepository;
 
-    public JwtAuthenticationFilter(JwtService jwtService) {
+    public JwtAuthenticationFilter(JwtService jwtService, UserRepository userRepository) {
         this.jwtService = jwtService;
+        this.userRepository = userRepository;
     }
 
     @Override
@@ -45,16 +50,19 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {//Frontend'de
 
             String userId = jwtService.extractUserId(token);//Bu artıklogin olan kullanıcınınid'si.
 
-            UsernamePasswordAuthenticationToken authentication =
-                    new UsernamePasswordAuthenticationToken(//kimlik oluşturma. userid giriş yapan kullanıcının kimliği,null şifreyi almıyoruz,yetki listesi(yok daha)
-                            userId,
-                            null,
-                            List.of()
-                    );
+            userRepository.findById(userId).ifPresent(user -> {
+                Role role = user.getRole() == null ? Role.USER : user.getRole();
+                UsernamePasswordAuthenticationToken authentication =
+                        new UsernamePasswordAuthenticationToken(
+                                userId,
+                                null,
+                                List.of(new SimpleGrantedAuthority("ROLE_" + role.name()))
+                        );
 
-            SecurityContextHolder//bu isteği yapan kullanıcı doğrulandı ve kimliği bu > userId.authentication.getName() metodu, tam olarak buradaki çivilenmiş kimliğe ulaşıp o ID'yi alıyor
-                    .getContext()
-                    .setAuthentication(authentication);
+                SecurityContextHolder
+                        .getContext()
+                        .setAuthentication(authentication);
+            });
         }
 
         filterChain.doFilter(request, response);//bariyeri kaldırır ve onaylanmış, kimliği tespit edilmiş bu isteği hedefine (Controller'a) gönderir.

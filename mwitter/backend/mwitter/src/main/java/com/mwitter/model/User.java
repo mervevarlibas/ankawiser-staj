@@ -30,4 +30,5 @@ public class User {
     private LocalDateTime verificationCodeExpiry;//doğrulama kodunun süresi
     private String resetPasswordToken;//Maildeki ham token'ın SHA-256 özeti burada tutulur; UserRepository token sorgusu bu alana bağlanır.
     private LocalDateTime resetPasswordTokenExpiry;//Sıfırlama linkinin son kullanım zamanıdır; UserService 15 dakika sonrasını kaydeder.
+    private Role role = Role.USER;
 }

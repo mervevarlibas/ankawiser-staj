@@ -16,4 +16,5 @@ public class LoginResponse {
     private String email;
 
     private String token;//başarılı girişten sonra frontende gönderilen cevaba ekledik
+    private String role;
 }

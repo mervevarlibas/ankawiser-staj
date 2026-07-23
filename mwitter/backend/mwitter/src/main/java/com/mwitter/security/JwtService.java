@@ -29,7 +29,7 @@ public class JwtService {
         this.expiration = expiration;
     }
 
-    public String generateToken(String userId) {
+    public String generateToken(String userId, String role) {
 
         Date now = new Date();// tokenin üretildiği zamanı alır
 
@@ -38,6 +38,7 @@ public class JwtService {
 
         return Jwts.builder()
                 .subject(userId)// tokenin kime ait olduğunu belirtir
+                .claim("role", role)
                 .issuedAt(now)// tokenin üretildiği zamanı ekler
                 .expiration(expirationDate)// tokenin geçerliliğinin biteceği zamanı ekler
                 .signWith(secretKey)// tokeni gizli anahtarla imzalar

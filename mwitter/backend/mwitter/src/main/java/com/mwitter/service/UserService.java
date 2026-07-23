@@ -20,6 +20,7 @@ import com.mwitter.dto.ProfileResponse;
 import com.mwitter.dto.RegisterRequest; //userservice i spring e tanıtıyoruz
 import com.mwitter.dto.UserResponse;
 import com.mwitter.model.User;
+import com.mwitter.model.Role;
 import com.mwitter.repository.UserRepository;
 import com.mwitter.security.JwtService;
 
@@ -69,6 +70,7 @@ public class UserService {
         user.setVerificationCode(code);
         user.setVerificationCodeExpiry(LocalDateTime.now().plusMinutes(2));
         user.setVerified(false);
+        user.setRole(Role.USER);
 
         // Mail gönderilemezse yeni kullanıcıyı veritabanında yarım kayıt olarak bırakma.
         emailService.sendVerificationMail(user.getEmail(), code);
@@ -135,7 +137,8 @@ public class UserService {
         if (!user.isVerified()) {
             throw new RuntimeException("Please verify your email before logging in.");
         }
-        String token = jwtService.generateToken(user.getId());//jwt servis üzerinden bir token üretir ve bunu loginresponse olarak frontende gönderir
+        Role role = user.getRole() == null ? Role.USER : user.getRole();
+        String token = jwtService.generateToken(user.getId(), role.name());//jwt servis üzerinden bir token üretir ve bunu loginresponse olarak frontende gönderir
         return convertToLoginResponse(user, token);// cevaba eklemek icin
 
     }
@@ -254,7 +257,8 @@ public class UserService {
                 user.getId(),
                 user.getUsername(),
                 user.getEmail(),
-                token);
+                token,
+                user.getRole() == null ? Role.USER.name() : user.getRole().name());
     }
 
     public List<UserResponse> searchUsers(String username) {
