@@ -1,5 +1,7 @@
 package com.mwitter.config;
 
+import java.util.List;
+
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -8,11 +10,10 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-import java.util.List;
-
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+
 import com.mwitter.security.JwtAuthenticationFilter;
 
 @Configuration
@@ -42,7 +43,8 @@ public class SecurityConfig {
                 )
                 .authorizeHttpRequests(auth -> auth//hangi endpointlere kim girebilir
                 .requestMatchers(
-                        "/", "/*.html", "/css/**", "/js/**", "/images/**"
+                        "/", "/*.html", "/css/**", "/js/**", "/images/**",
+                        "/icons/**", "/manifest.webmanifest", "/sw.js"
                 ).permitAll()
                 .requestMatchers(//token olmadan kullanılabilir çünkü kullanıcı o işlemleri yaparken token a sahip değil
                         "/users/register",
