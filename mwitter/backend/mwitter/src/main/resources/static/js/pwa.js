@@ -55,6 +55,11 @@
         return;
     }
 
+    const isLoginPage = window.location.pathname === "/login.html";
+    if (!isLoginPage) {
+        return;
+    }
+
     const isIos = /iphone|ipad|ipod/i.test(navigator.userAgent);
     let installPrompt;
 
