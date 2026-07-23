@@ -1,4 +1,4 @@
-const CACHE_NAME = "mwitter-shell-v5";
+const CACHE_NAME = "mwitter-shell-v7";
 const APP_SHELL = [
     "/offline.html",
     "/css/style.css",

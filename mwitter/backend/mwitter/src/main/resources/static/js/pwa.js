@@ -32,7 +32,12 @@
 
         window.visualViewport.addEventListener("resize", updateKeyboardState);
         window.visualViewport.addEventListener("scroll", updateKeyboardState);
-        document.addEventListener("focusin", updateKeyboardState);
+        document.addEventListener("focusin", event => {
+            if (event.target.matches("input, textarea, select, [contenteditable='true']")) {
+                root.classList.add("mobile-keyboard-open");
+            }
+            window.setTimeout(updateKeyboardState, 250);
+        });
         document.addEventListener("focusout", () => {
             window.setTimeout(updateKeyboardState, 80);
         });

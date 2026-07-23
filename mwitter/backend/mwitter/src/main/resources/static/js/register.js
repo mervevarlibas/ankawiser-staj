@@ -2,6 +2,7 @@ $(document).ready(function() {
 
     let registeredEmail = ""; //hangi email için kod doğrulaması yapacağımızı burda tutuyoruz
     let codeTimerInterval = null;
+    let registerRequestInProgress = false;
 
     function startCodeTimer(seconds) {
 
@@ -38,6 +39,14 @@ $(document).ready(function() {
     $("#registerForm").submit(function(event) {
 
         event.preventDefault();
+        if (registerRequestInProgress) {
+            return;
+        }
+        registerRequestInProgress = true;
+        const registerButton = $("#registerButton");
+        registerButton
+            .prop("disabled", true)
+            .text("Kod gönderiliyor...");
 
         const username = $("#username").val().trim();
         const email = $("#email").val().trim();
@@ -92,6 +101,11 @@ $(document).ready(function() {
                     .removeClass("success-message")
                     .addClass("error-message")
                     .text(message);
+
+                registerRequestInProgress = false;
+                registerButton
+                    .prop("disabled", false)
+                    .text("Kayıt Ol");
             }
         });
     });

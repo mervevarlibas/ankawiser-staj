@@ -8,6 +8,9 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
+import java.util.Locale;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -31,6 +34,8 @@ import lombok.RequiredArgsConstructor;
 public class UserService {
 
     private static final SecureRandom SECURE_RANDOM = new SecureRandom();//Reset linki için Math.random yerine kriptografik olarak güçlü rastgele bayt üretir.
+    private static final long REGISTRATION_MAIL_COOLDOWN_MS = 30_000;
+    private final ConcurrentMap<String, Long> registrationMailCooldowns = new ConcurrentHashMap<>();
 
     private final EmailService emailService;//doğrulama mailleri atmak için
     private final UserRepository userRepository; // bu sınıfın calısabilmesi için userrepository sınıfını kullanıyoruz.
@@ -72,11 +77,33 @@ public class UserService {
         user.setVerified(false);
         user.setRole(Role.USER);
 
-        // Mail gönderilemezse yeni kullanıcıyı veritabanında yarım kayıt olarak bırakma.
-        emailService.sendVerificationMail(user.getEmail(), code);
+        // Aynı kayıt isteğine art arda basılsa bile 30 saniyede yalnızca bir doğrulama maili gönder.
+        String cooldownKey = user.getEmail().trim().toLowerCase(Locale.ROOT);
+        long cooldownUntil = acquireRegistrationMailCooldown(cooldownKey);
+        try {
+            emailService.sendVerificationMail(user.getEmail(), code);
+        } catch (RuntimeException exception) {
+            registrationMailCooldowns.remove(cooldownKey, cooldownUntil);
+            throw exception;
+        }
         User savedUser = userRepository.save(user);
         return convertToResponse(savedUser);
 
+    }
+
+    private long acquireRegistrationMailCooldown(String email) {
+        long now = System.currentTimeMillis();
+        if (registrationMailCooldowns.size() > 1_000) {
+            registrationMailCooldowns.entrySet().removeIf(entry -> entry.getValue() <= now);
+        }
+
+        return registrationMailCooldowns.compute(email, (key, blockedUntil) -> {
+            if (blockedUntil != null && blockedUntil > now) {
+                throw new RuntimeException(
+                        "Doğrulama kodu kısa süre önce gönderildi. Lütfen 30 saniye bekleyin.");
+            }
+            return now + REGISTRATION_MAIL_COOLDOWN_MS;
+        });
     }
 
     public void verifyCode(String email, String code) {// doğrulama kodunu kontrol eder.kullanıcı mailindeki kodu frontend e girdiğinde çalışır

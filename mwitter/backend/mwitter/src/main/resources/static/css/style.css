@@ -1194,8 +1194,7 @@ body.dark-mode .login-type-option.active {
         font-size: 15px;
     }
     html.mobile-keyboard-open .left-sidebar {
-        transform: translateY(var(--mobile-keyboard-height, 0px));
-        pointer-events: none;
+        display: none;
     }
     html.mobile-keyboard-open .pwa-install-button {
         display: none;
