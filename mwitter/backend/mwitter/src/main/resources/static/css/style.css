@@ -316,6 +316,44 @@ body.dark-mode textarea::placeholder { color: #8899a6; }
     text-decoration: underline;
 }
 
+.login-type-switch {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 4px;
+    margin: 24px 0 10px;
+    padding: 4px;
+    border: 1px solid var(--pink-border);
+    border-radius: 14px;
+    background: var(--pink-light);
+}
+
+.login-type-option {
+    min-height: 40px;
+    border: 0;
+    border-radius: 10px;
+    background: transparent;
+    color: var(--text-soft);
+    font: 700 14px/1 "Segoe UI", Arial, sans-serif;
+    cursor: pointer;
+}
+
+.login-type-option.active {
+    background: var(--card-bg);
+    color: var(--rose-dark);
+    box-shadow: 0 4px 14px rgba(126, 41, 73, .12);
+}
+
+.login-type-description {
+    margin: 0 0 14px;
+    color: var(--text-soft);
+    text-align: center;
+    font-size: 13px;
+}
+
+body.dark-mode .login-type-option.active {
+    color: var(--text-main);
+}
+
 .forgot-password-link {
     display: block; width: fit-content; margin: 14px auto 0;
     color: var(--rose-main); font-size: 14px; font-weight: 650; text-decoration: none;
@@ -1106,6 +1144,7 @@ body.dark-mode textarea::placeholder { color: #8899a6; }
         z-index: 30;
         border-top: 1px solid var(--pink-border);
         border-right: none;
+        transition: none;
     }
     .sidebar-inner {
         min-height: auto;
@@ -1153,6 +1192,13 @@ body.dark-mode textarea::placeholder { color: #8899a6; }
     .composer-content textarea {
         min-height: 90px;
         font-size: 15px;
+    }
+    html.mobile-keyboard-open .left-sidebar {
+        transform: translateY(var(--mobile-keyboard-height, 0px));
+        pointer-events: none;
+    }
+    html.mobile-keyboard-open .pwa-install-button {
+        display: none;
     }
     .pwa-install-button {
         bottom: calc(76px + env(safe-area-inset-bottom));

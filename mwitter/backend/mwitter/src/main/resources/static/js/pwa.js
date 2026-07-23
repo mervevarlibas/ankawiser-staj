@@ -1,6 +1,45 @@
 (() => {
     "use strict";
 
+    const setupMobileKeyboard = () => {
+        if (!window.visualViewport || !window.matchMedia("(max-width: 760px)").matches) {
+            return;
+        }
+
+        const root = document.documentElement;
+        let baselineHeight = Math.max(window.innerHeight, window.visualViewport.height);
+
+        const updateKeyboardState = () => {
+            const viewport = window.visualViewport;
+            const editableFocused = document.activeElement?.matches(
+                "input, textarea, select, [contenteditable='true']"
+            );
+            if (!editableFocused) {
+                baselineHeight = Math.max(window.innerHeight, viewport.height + viewport.offsetTop);
+            }
+            const keyboardHeight = Math.max(
+                0,
+                baselineHeight - viewport.height - viewport.offsetTop
+            );
+            const keyboardOpen = editableFocused && keyboardHeight > 120;
+
+            root.classList.toggle("mobile-keyboard-open", keyboardOpen);
+            root.style.setProperty(
+                "--mobile-keyboard-height",
+                keyboardOpen ? `${keyboardHeight}px` : "0px"
+            );
+        };
+
+        window.visualViewport.addEventListener("resize", updateKeyboardState);
+        window.visualViewport.addEventListener("scroll", updateKeyboardState);
+        document.addEventListener("focusin", updateKeyboardState);
+        document.addEventListener("focusout", () => {
+            window.setTimeout(updateKeyboardState, 80);
+        });
+    };
+
+    setupMobileKeyboard();
+
     if ("serviceWorker" in navigator) {
         window.addEventListener("load", () => {
             navigator.serviceWorker.register("/sw.js").catch(error => {

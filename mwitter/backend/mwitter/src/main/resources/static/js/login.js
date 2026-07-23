@@ -1,4 +1,24 @@
 $(document).ready(function () {//HTML tamamen yüklendikten sonra JavaScript’in çalışmasını sağlar
+    let loginType = "user";
+
+    $(".login-type-option").click(function () {
+        loginType = $(this).data("login-type");
+        $(".login-type-option")
+            .removeClass("active")
+            .attr("aria-pressed", "false");
+        $(this)
+            .addClass("active")
+            .attr("aria-pressed", "true");
+
+        const isAdmin = loginType === "admin";
+        $("#loginSubmitButton").text(isAdmin ? "Yönetici Paneline Gir" : "Giriş Yap");
+        $("#loginTypeDescription").text(
+            isAdmin
+                ? "Yalnızca yetkili yönetici hesabı kabul edilir."
+                : "Mwitter hesabınla giriş yap."
+        );
+        $("#message").text("");
+    });
 
     $("#loginForm").submit(function (event) {//id="loginForm" olan form gönderildiğinde bu fonksiyon çalışır
 
@@ -19,6 +39,16 @@ $(document).ready(function () {//HTML tamamen yüklendikten sonra JavaScript’i
             data: JSON.stringify(loginData),//JavaScript nesnesini JSON metnine çevirir
 
             success: function (response) {//Backend 200 OK döndürürse çalışır.
+                if (loginType === "admin") {
+                    if (response.role !== "ADMIN") {
+                        $("#message").text("Bu hesap yönetici paneline erişemez.");
+                        return;
+                    }
+                    sessionStorage.setItem("adminToken", response.token);
+                    sessionStorage.setItem("adminUsername", response.username);
+                    window.location.href = "admin-dashboard.html";
+                    return;
+                }
 
                 localStorage.setItem("token", response.token);//JWT’yi tarayıcıda saklar.
                 localStorage.setItem("userId", response.id);//localstorage tarayıcının kücük vtabanıdır

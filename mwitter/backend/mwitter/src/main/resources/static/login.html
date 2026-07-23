@@ -52,6 +52,19 @@
 
             <h1 class="brand-logo">Mwitter</h1>
 
+            <div class="login-type-switch" role="group" aria-label="Giriş türü">
+                <button type="button" class="login-type-option active" data-login-type="user" aria-pressed="true">
+                    Kullanıcı
+                </button>
+                <button type="button" class="login-type-option" data-login-type="admin" aria-pressed="false">
+                    Yönetici
+                </button>
+            </div>
+
+            <p id="loginTypeDescription" class="login-type-description">
+                Mwitter hesabınla giriş yap.
+            </p>
+
             <form id="loginForm" class="auth-form">
 
                 <label for="email">E-posta</label>
@@ -74,7 +87,7 @@
                     required
                 >
 
-                <button type="submit" class="primary-button">
+                <button type="submit" id="loginSubmitButton" class="primary-button">
                     Giriş Yap
                 </button>
 
