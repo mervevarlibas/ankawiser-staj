@@ -23,19 +23,19 @@ public class HttpRequestMetrics extends OncePerRequestFilter {
             HttpServletRequest request,
             HttpServletResponse response,
             FilterChain filterChain) throws ServletException, IOException {
-        long startedAt = System.nanoTime();
+        long startedAt = System.nanoTime();//her istekte ile başlangıç zamanı alınır.
         try {
             filterChain.doFilter(request, response);
         } finally {
-            totalRequests.increment();
-            totalDurationNanos.add(System.nanoTime() - startedAt);
+            totalRequests.increment();//istek tamamnlanınca total istek sayısı artırılır
+            totalDurationNanos.add(System.nanoTime() - startedAt);//istek süresi kaydedilir
             if (response.getStatus() >= 400) {
                 failedRequests.increment();
             }
         }
     }
 
-    public Snapshot snapshot() {
+    public Snapshot snapshot() {//Bu değerler uygulama yeniden başlatılınca sıfırlanır. Çünkü şu anda MongoDB’ye kaydedilmiyor, RAM’de tutuluyor.
         long total = totalRequests.sum();
         long failed = failedRequests.sum();
         double averageMs = total == 0 ? 0 : totalDurationNanos.sum() / 1_000_000.0 / total;

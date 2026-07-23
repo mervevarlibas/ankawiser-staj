@@ -3,8 +3,10 @@ package com.mwitter.model;//dosyanın hangi klasöre ait olduğunu belirtiyoruz
 import java.time.LocalDateTime;//saati ve tarihi birlikte tutar
 import java.util.ArrayList;
 import java.util.List;
+
 import org.springframework.data.annotation.Id;//MongoDB deki her belgenin benzersiz bir kimliğe sahip olduğunu belirtiyoruz
 import org.springframework.data.mongodb.core.mapping.Document; //Bu sınıfın MongoDB'de bir collection olduğunu söyler.
+
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -30,5 +32,5 @@ public class User {
     private LocalDateTime verificationCodeExpiry;//doğrulama kodunun süresi
     private String resetPasswordToken;//Maildeki ham token'ın SHA-256 özeti burada tutulur; UserRepository token sorgusu bu alana bağlanır.
     private LocalDateTime resetPasswordTokenExpiry;//Sıfırlama linkinin son kullanım zamanıdır; UserService 15 dakika sonrasını kaydeder.
-    private Role role = Role.USER;
+    private Role role = Role.USER;//Yeni bir User nesnesi oluşturulduğunda varsayılan rolü USER olur
 }

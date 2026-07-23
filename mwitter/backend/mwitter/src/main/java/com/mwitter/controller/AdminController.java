@@ -14,7 +14,7 @@ import lombok.RequiredArgsConstructor;
 @RequestMapping("/admin")
 public class AdminController {
 
-    private final AdminMetricsService adminMetricsService;
+    private final AdminMetricsService adminMetricsService;//Controller yalnızca servisi çağırır:
 
     @GetMapping("/metrics")
     public AdminMetricsResponse metrics() {

@@ -137,7 +137,7 @@ public class UserService {
         if (!user.isVerified()) {
             throw new RuntimeException("Please verify your email before logging in.");
         }
-        Role role = user.getRole() == null ? Role.USER : user.getRole();
+        Role role = user.getRole() == null ? Role.USER : user.getRole();//Kullanıcının kimliği ve rolü JWT üretme servisine gönderilir.
         String token = jwtService.generateToken(user.getId(), role.name());//jwt servis üzerinden bir token üretir ve bunu loginresponse olarak frontende gönderir
         return convertToLoginResponse(user, token);// cevaba eklemek icin
 

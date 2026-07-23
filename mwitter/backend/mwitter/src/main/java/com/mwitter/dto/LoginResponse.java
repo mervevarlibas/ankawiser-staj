@@ -16,5 +16,5 @@ public class LoginResponse {
     private String email;
 
     private String token;//başarılı girişten sonra frontende gönderilen cevaba ekledik
-    private String role;
+    private String role;//bu yalnızca arayüz yönlendirmesi içindir. Gerçek güvenlik kontrolü backend’de yapılır.
 }

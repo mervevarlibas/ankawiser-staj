@@ -56,7 +56,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {//Frontend'de
                         new UsernamePasswordAuthenticationToken(
                                 userId,
                                 null,
-                                List.of(new SimpleGrantedAuthority("ROLE_" + role.name()))
+                                List.of(new SimpleGrantedAuthority("ROLE_" + role.name()))//Rolü yalnızca JWT’den değil, MongoDB’den tekrar okumamız bilinçli bir güvenlik kararıdır.
                         );
 
                 SecurityContextHolder
