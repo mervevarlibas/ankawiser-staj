@@ -981,14 +981,49 @@ body.dark-mode textarea::placeholder { color: #8899a6; }
     .home-layout {
         grid-template-columns: 220px minmax(0, 1fr);
     }
+    .left-sidebar {
+        grid-row: 1 / span 2;
+    }
+    .feed-column {
+        grid-column: 2;
+        grid-row: 2;
+    }
     .right-sidebar {
+        display: block;
+        grid-column: 2;
+        grid-row: 1;
+        border-bottom: 1px solid var(--pink-border);
+        border-left: none;
+    }
+    .right-panel {
+        position: static;
+        padding: 16px 20px;
+    }
+    .search-card {
+        padding: 14px 16px;
+    }
+    .suggestion-card,
+    .home-footer {
         display: none;
     }
 }
 
 @media (max-width: 760px) {
     .home-layout {
-        display: block;
+        display: flex;
+        flex-direction: column;
+    }
+    .right-sidebar {
+        order: -1;
+    }
+    .right-panel {
+        padding: 12px;
+    }
+    .search-card {
+        border-radius: 16px;
+    }
+    .search-card label {
+        margin-bottom: 8px;
     }
     .left-sidebar {
         position: fixed;
