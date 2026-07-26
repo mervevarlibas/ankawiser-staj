@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mwitter - Bildirimler</title><link rel="stylesheet" href="css/style.css"><script src="js/theme.js" defer></script>
+</head>
+<body class="home-page notifications-page">
+<button type="button" id="themeToggle" class="theme-toggle">☾ Karanlık Mod</button>
+<div class="home-layout">
+<aside class="left-sidebar"><div class="sidebar-inner"><a href="index.html" class="sidebar-logo">Mwitter</a>
+<nav class="main-nav">
+<a href="index.html" class="nav-item"><span class="nav-icon">⌂</span><span>Ana Sayfa</span></a>
+<a href="messages.html" class="nav-item"><span class="nav-icon">✉</span><span>Sohbetler</span></a>
+<a href="notifications.html" class="nav-item active"><span class="nav-icon">🔔</span><span>Bildirimler</span><span id="notificationBadge" class="nav-unread-badge" hidden>0</span></a>
+<a href="#" id="profileLink" class="nav-item"><span class="nav-icon">♡</span><span>Profil</span></a>
+<button type="button" class="nav-item nav-button" id="logoutButton"><span class="nav-icon">↪</span><span>Çıkış Yap</span></button>
+</nav><div class="sidebar-user-card"><div class="avatar"><span id="sidebarAvatarLetter">M</span></div><div class="sidebar-user-info"><strong id="sidebarUsername">Kullanıcı</strong><small>Mwitter hesabı</small></div></div></div></aside>
+<main class="feed-column"><header class="feed-header"><div><p class="eyebrow">Hareketler</p><h1>Bildirimler</h1></div></header>
+<section class="timeline-section"><div id="notificationList" class="notification-list"><div class="loading-card">Bildirimler yükleniyor...</div></div></section></main>
+<aside class="right-sidebar"><div class="right-panel"><section class="suggestion-card"><div class="section-title-row"><h2>Güncel kal</h2></div><p>Takip, beğeni, yorum ve repost hareketlerini burada görebilirsin.</p></section></div></aside>
+</div>
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script><script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script><script src="https://cdn.jsdelivr.net/npm/@stomp/stompjs@7/bundles/stomp.umd.min.js"></script><script src="js/websocket-client.js"></script><script src="js/notifications-badge.js"></script><script src="js/notifications.js"></script>
+</body></html>

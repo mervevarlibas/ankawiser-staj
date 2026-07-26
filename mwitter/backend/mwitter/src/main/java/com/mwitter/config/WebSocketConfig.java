@@ -27,8 +27,7 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
     @Override//kanalın başlangıç noktası (endpoint)
     public void registerStompEndpoints(StompEndpointRegistry registry) {//frontend,backend ile canlı bağlantı kurmak istediğinde
-        registry.addEndpoint("/ws")//frontend, sürekli açık kalacak bağlantıyı başlatmak için ilk olarak ws://localhost:8080/ws adresine tıklar.addEndpoint("/ws") bu kapıyı açar.
-                .setAllowedOriginPatterns("http://localhost:5500", "http://127.0.0.1:5500")//sadece 5500 portundan gelen frontend bağlantılarına izin veriyo
+        registry.addEndpoint("/ws")
                 .withSockJS();//Eski bir tarayıcı WebSocket desteklemiyorsa bile sistemin çökmemesi için alternatif iletişim yolları üretir.
     }
 

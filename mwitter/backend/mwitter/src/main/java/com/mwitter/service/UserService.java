@@ -1,18 +1,17 @@
 package com.mwitter.service;
 
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-
-import java.util.List;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Base64;
+import java.util.List;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
-import org.springframework.beans.factory.annotation.Value;
 
 import com.mwitter.dto.ChangePasswordRequest;
 import com.mwitter.dto.LoginRequest;
@@ -39,8 +38,8 @@ public class UserService {
     private final JwtService jwtService;//giriş yapıldığında token basar
     private final NotificationService notificationService;//Başarılı follow işleminden sonra NotificationService üzerinden alıcıya bildirim üretir.
 
-    @Value("${app.frontend-base-url:http://127.0.0.1:5500}") //application.properties'teki frontend adresini Spring üzerinden bu alana bağlar.
-    private String frontendBaseUrl;//Maildeki reset-password.html bağlantısının domain ve klasör başlangıcını tutar.
+    @Value("${app.base-url:http://localhost:8080}")
+    private String baseUrl;
 
     public UserResponse saveUser(RegisterRequest request) { // dışarıdan doğrudan user gelmiyor.kayıt için gerekli
                                                             // alanları taşıyan registerrequest geliyor
@@ -294,7 +293,7 @@ public void requestPasswordReset(String email) {//UserController'daki forgot-pas
         user.setResetPasswordTokenExpiry(LocalDateTime.now().plusMinutes(15));//Linkin backend tarafından kabul edileceği son zamanı 15 dakika sonrası yapar.
         userRepository.save(user);//Token özeti ve süreyi User koleksiyonunda kalıcı hale getirir.
 
-        String resetLink = frontendBaseUrl + "/reset-password.html?token=" + rawToken;//linke hashlenmemiş token koyuyor.çünkü kullanıcı linke tıklayınca frontend bu ham token'ı backend'e gönderecek, backend onu tekrar hash'leyip veritabanındaki hash ile karşılaştıracak
+        String resetLink = baseUrl + "/reset-password.html?token=" + rawToken;//linke hashlenmemiş token koyuyor.çünkü kullanıcı linke tıklayınca frontend bu ham token'ı backend'e gönderecek, backend onu tekrar hash'leyip veritabanındaki hash ile karşılaştıracak
         emailService.sendPasswordResetMail(user.getEmail(), resetLink);//Hazırlanan linki EmailService üzerinden kullanıcının kayıtlı adresine gönderir.
     });
 }

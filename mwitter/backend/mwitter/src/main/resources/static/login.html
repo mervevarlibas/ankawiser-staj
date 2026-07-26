@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="tr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Mwitter - Giriş Yap</title>
+
+    <link rel="stylesheet" href="css/style.css">
+    <script src="js/theme.js" defer></script>
+</head>
+
+<body class="auth-page">
+
+    <button type="button" id="themeToggle" class="theme-toggle">☾ Karanlık Mod</button>
+
+    <div class="floral-corner floral-top-left">
+        <span class="flower flower-one">✿</span>
+        <span class="flower flower-two">❀</span>
+        <span class="leaf leaf-one">❧</span>
+    </div>
+
+    <div class="floral-corner floral-top-right">
+        <span class="flower flower-one">✿</span>
+        <span class="flower flower-two">❀</span>
+        <span class="leaf leaf-one">❧</span>
+    </div>
+
+    <div class="floral-corner floral-bottom-left">
+        <span class="flower flower-one">✿</span>
+        <span class="flower flower-two">❀</span>
+        <span class="leaf leaf-one">❧</span>
+    </div>
+
+    <div class="floral-corner floral-bottom-right">
+        <span class="flower flower-one">✿</span>
+        <span class="flower flower-two">❀</span>
+        <span class="leaf leaf-one">❧</span>
+    </div>
+
+    <main class="auth-container">
+
+        <section class="auth-card">
+
+            <h1 class="brand-logo">Mwitter</h1>
+
+            <form id="loginForm" class="auth-form">
+
+                <label for="email">E-posta</label>
+
+                <input
+                    type="email"
+                    id="email"
+                    placeholder="E-posta adresini gir"
+                    autocomplete="email"
+                    required
+                >
+
+                <label for="password">Şifre</label>
+
+                <input
+                    type="password"
+                    id="password"
+                    placeholder="Şifreni gir"
+                    autocomplete="current-password"
+                    required
+                >
+
+                <button type="submit" class="primary-button">
+                    Giriş Yap
+                </button>
+
+            </form>
+
+            <a href="#" id="forgotPasswordLink" class="forgot-password-link">Şifremi unuttum?</a>
+
+            <p id="message" class="form-message"></p>
+
+            <p class="auth-switch">
+                Hesabın yok mu?
+                <a href="register.html">Kayıt ol</a>
+            </p>
+
+        </section>
+
+    </main>
+
+    <div id="forgotPasswordModal" class="modal-overlay" style="display:none;">
+        <div class="modal-box auth-modal" role="dialog" aria-modal="true" aria-labelledby="forgotPasswordTitle">
+            <div class="modal-header">
+                <h3 id="forgotPasswordTitle">Şifremi Unuttum</h3>
+                <button type="button" id="closeForgotPasswordModal" class="modal-close" aria-label="Kapat">&times;</button>
+            </div>
+            <div class="auth-form">
+                <p class="modal-description">E-posta adresini gir; kayıtlıysa şifre sıfırlama bağlantısını gönderelim.</p>
+                <label for="forgotPasswordEmail">E-posta adresin</label>
+                <input type="email" id="forgotPasswordEmail" autocomplete="email" required>
+                <button type="button" id="sendResetLinkButton" class="primary-button">Sıfırlama Linki Gönder</button>
+                <p id="forgotPasswordMessage" class="form-message" aria-live="polite"></p>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="js/login.js"></script>
+
+</body>
+
+</html>

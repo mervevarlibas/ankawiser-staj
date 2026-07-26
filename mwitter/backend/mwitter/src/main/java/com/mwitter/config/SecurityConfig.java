@@ -41,6 +41,9 @@ public class SecurityConfig {
                 )
                 )
                 .authorizeHttpRequests(auth -> auth//hangi endpointlere kim girebilir
+                .requestMatchers(
+                        "/", "/*.html", "/css/**", "/js/**", "/images/**"
+                ).permitAll()
                 .requestMatchers(//token olmadan kullanılabilir çünkü kullanıcı o işlemleri yaparken token a sahip değil
                         "/users/register",
                         "/users/login", //token isteme
