@@ -43,17 +43,19 @@ public class UserService {
 
     public UserResponse saveUser(RegisterRequest request) { // dışarıdan doğrudan user gelmiyor.kayıt için gerekli
                                                             // alanları taşıyan registerrequest geliyor
-        if (userRepository.findByEmail(request.getEmail()).isPresent()) {
-
+        User existingUser = userRepository.findByEmail(request.getEmail()).orElse(null);
+        if (existingUser != null && existingUser.isVerified()) {
             throw new RuntimeException("Email already exists.");
         }
-        if (userRepository.findByUsername(request.getUsername()).isPresent()) {
 
+        User usernameOwner = userRepository.findByUsername(request.getUsername()).orElse(null);
+        if (usernameOwner != null
+                && (existingUser == null || !usernameOwner.getId().equals(existingUser.getId()))) {
             throw new RuntimeException("Username already exists.");
-
         }
 
-        User user = new User();// user vtabanına kaydolacak gerçek model,request veri taşıyıcı
+        // Yarım kalmış doğrulanmamış kayıt varsa aynı hesabı güncelleyip yeni kod gönderir.
+        User user = existingUser != null ? existingUser : new User();
         user.setUsername(request.getUsername());
         user.setEmail(request.getEmail());
         user.setPhoneNumber(request.getPhoneNumber());
@@ -68,8 +70,9 @@ public class UserService {
         user.setVerificationCodeExpiry(LocalDateTime.now().plusMinutes(2));
         user.setVerified(false);
 
-        User savedUser = userRepository.save(user);// kayıt gene de vtabanına gidiyor ama doğrulanmamış bir şekilde
-        emailService.sendVerificationMail(savedUser.getEmail(), code);
+        // Mail gönderilemezse yeni kullanıcıyı veritabanında yarım kayıt olarak bırakma.
+        emailService.sendVerificationMail(user.getEmail(), code);
+        User savedUser = userRepository.save(user);
         return convertToResponse(savedUser);
 
     }
