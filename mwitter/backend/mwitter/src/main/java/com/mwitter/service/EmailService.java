@@ -17,7 +17,7 @@ public class EmailService {
     private final JavaMailSender mailSender; // Spring, application.properties'teki
                                              // ayarlara göre bu bean'i otomatik oluşturur
 
-    @Value("${spring.mail.username}")
+    @Value("${app.mail.from:${spring.mail.username}}")
     private String fromAddress; // gönderen adres, config'ten okunuyor
 
     public void sendVerificationMail(String toEmail, String code) {
